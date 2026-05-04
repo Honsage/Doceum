@@ -1,1 +1,19 @@
+# Dependencies
+node_modules/
+.mvn/wrapper/maven-wrapper.jar
+
+# Environment and secrets
 .env
+.env.*
+!.env.example
+
+# IDEs
+.vscode/
+.idea/
+
+# Build
+dist/
+build/
+out/
+temp/
+target/
