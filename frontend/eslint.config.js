@@ -3,20 +3,44 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
-    languageOptions: {
-      globals: globals.browser,
+export default tseslint.config(
+    { ignores: ['dist', 'node_modules'] },
+    {
+      files: ['**/*.{ts,tsx}'],
+      extends: [
+          js.configs.recommended,
+          ...tseslint.configs.recommendedTypeChecked,
+          reactHooks.configs.flat.recommended,
+      ],
+      languageOptions: {
+        ecmaVersion: 2020,
+        globals: globals.browser,
+        parserOptions: {
+          project: ['./tsconfig.json'],
+          tsconfigRootDir: import.meta.dirname,
+        },
+      },
+      plugins: {
+        'react-refresh': reactRefresh,
+      },
+      rules: {
+        'react-refresh/only-export-components': [
+            'warn',
+          { allowConstantExport: true},
+        ],
+
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-floating-promises': 'error',
+        '@typescript-eslint/consistent-type-imports': ['error', {
+          prefer: 'type-imports',
+          fixStyle: 'separate-type-imports'
+        }],
+      },
     },
-  },
-])
+
+    {
+      files: ['**/*.js'],
+      extends: [tseslint.configs.disableTypeChecked],
+    }
+)
