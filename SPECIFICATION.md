@@ -1,7 +1,1097 @@
-# Doceo Document Specification
+# Doceo Format Specification
 
-Данная спецификация содержит формальное описание кастомного формата описания интерактивного документа DOCEO (.doceo).
+**Version:** 1.0-draft  
+**Status:** Draft  
+**Date:** 2026-05-06
 
-## Структура документа
+---
 
-Документ организован по принципу ZIP-архива с метаданными, разметкой и медиафайлами. Такой подход к организации документа делает его целостным и независимым от наличия подключения к удаленному хранилищу документов. Т.о. по структуре документ стоит в одном ряду с форматами DOCX, JAR, APK, EPUB.
+## Table of Contents
+
+1. [Introduction](#1-introduction)
+2. [Terms and Definitions](#2-terms-and-definitions)
+3. [Conventions](#3-conventions)
+4. [File Structure](#4-file-structure)
+5. [Manifest Specification](#5-manifestjson-specification)
+6. [Content Specification](#6-contentjson-specification)
+   - 6.1 [Document Root](#61-document-root)
+   - 6.2 [Node Classification](#62-node-classification)
+   - 6.3 [Semantic Containers](#63-semantic-containers)
+   - 6.4 [Semantic Structures](#64-semantic-structures)
+   - 6.5 [Content Leaves](#65-content-leaves)
+7. [Inline Model](#7-inline-model)
+8. [Validation Rules](#8-validation-rules)
+9. [Versioning and Compatibility](#9-versioning-and-compatibility)
+10. [Appendix A — Full Node Reference](#10-appendix-a--full-node-reference)
+11. [Appendix B — Full Document Example](#11-appendix-b--full-document-example)
+
+---
+
+## 1. Introduction
+
+### 1.1 Purpose
+
+This document defines the DOCEO file format (`.doceo`), a container format for interactive educational documents. The format is designed for authoring, distribution, and rendering of structured documents that may include interactive components such as tabbed content, step-by-step algorithms, quizzes, and galleries.
+
+### 1.2 Scope
+
+This specification covers:
+
+- The physical structure of a `.doceo` file
+- The schema of `manifest.json`
+- The schema of `content.json`
+- The inline content model
+- Validation invariants
+- Versioning policy
+
+This specification does not cover rendering behavior, editor implementation, or server-side processing.
+
+### 1.3 Intended Audience
+
+This specification is intended for developers implementing Doceo-compatible readers, writers, validators, or conversion tools.
+
+### 1.4 Document Model Concept
+
+A `.doceo` document is a **stateless, self-contained content artifact**. The following properties hold by definition:
+
+**Statelessness.** A document contains no reader state. It does not record which tab was last selected, which accordion was open, which stepper step was active, or which checklist items were checked. All such state is ephemeral and managed exclusively by the reader for the duration of a single reading session.
+
+**Deterministic rendering.** Given the same `.doceo` file and a conforming reader, the initial rendered presentation MUST be identical across all readings, on all platforms, at any point in time. The document is a pure function of its content.
+
+**Self-containment.** All content required to render the document is either embedded within the archive or referenced by an explicit `src_type: "url"` field. A reader MUST NOT depend on any external state, session, or service to produce the initial rendering of a document, except when resolving `src_type: "url"` media references.
+
+These properties together guarantee that a `.doceo` file is fully portable and its presentation is verifiable against its content at any time.
+
+---
+
+## 2. Terms and Definitions
+
+**Document** — A single `.doceo` file representing a complete unit of content.
+
+**Archive** — The ZIP container that physically stores a `.doceo` file.
+
+**Manifest** — The file `manifest.json` located at the root of the archive. Describes the document's metadata, asset inventory, and integrity signature.
+
+**Content** — The file `content.json` located at the root of the archive. Describes the document's node tree.
+
+**Asset** — Any media file (image, video, canvas raster) stored in the archive and referenced by content nodes.
+
+**Node** — A single element in the document tree. Every node has a unique `id` and a discriminating `type` field.
+
+**Semantic Container** — A node that organizes an arbitrary sequence of child nodes through a specific layout behavior or semantic role. Its child composition is unrestricted by schema.
+
+**Semantic Structure** — A node with a fixed, named set of typed fields. Child composition is defined by the schema, not by a generic `children` array.
+
+**Content Leaf** — A terminal node that carries a specific content substance (rich text, raster image, video, code, formula, canvas, diagram). Content Leaves have no block-level children.
+
+**Text** — A Content Leaf carrying a sequence of inline nodes. `text` is never a standalone block in the document tree; it appears exclusively as a named field value within Semantic Structures.
+
+**Inline Node** — An element that exists within a `text` Content Leaf. Inline nodes form the rich text content model.
+
+**Discriminated Union** — A JSON object whose type is unambiguously determined by the value of its `type` field.
+
+**NodeId** — An 8-character alphanumeric identifier generated by a nanoid algorithm, unique within the scope of a single document.
+
+**Legal Modification** — Any modification of a document performed through a conforming writer implementation acting on behalf of the document's author. Direct manipulation of archive contents outside of a conforming writer constitutes an illegal modification.
+
+**Backward Compatibility** — The guarantee that a reader implementing version N of this specification can correctly process documents produced under any version M where M ≤ N, provided the reader ignores unknown fields and unknown node types.
+
+---
+
+## 3. Conventions
+
+### 3.1 Notation
+
+Type definitions in this specification use TypeScript-like notation for clarity. This notation is declarative and does not imply any implementation language.
+
+```
+type NodeId = string        // 8-character nanoid
+type HexColor = string      // e.g. "#ff0000"
+
+interface ExampleNode {
+  id:       NodeId          // required
+  type:     "example"       // required, literal discriminator
+  label?:   Text            // optional field (marked with ?)
+  level:    1 | 2 | 3       // union of literals
+}
+```
+
+### 3.2 Field Requirements
+
+| Marker | Meaning |
+|--------|---------|
+| No marker | Field is required. Its absence makes the document invalid. |
+| `?` suffix | Field is optional. Its absence is valid. |
+
+### 3.3 Key Words
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+
+### 3.4 Unknown Fields
+
+A conforming reader MUST ignore unknown fields on any node. This is required for forward compatibility with future versions of this specification.
+
+### 3.5 Unknown Node Types
+
+A conforming reader that encounters a node with an unknown `type` value MUST NOT fail. It SHOULD render a neutral fallback placeholder in place of the unknown node.
+
+---
+
+## 4. File Structure
+
+### 4.1 Container Format
+
+A `.doceo` file is a ZIP archive as defined by the ZIP file format specification ([PKWARE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)). The archive MUST use the `.doceo` file extension.
+
+The archive MUST contain the following files at its root:
+
+```
+document.doceo
+├── manifest.json
+└── content.json
+```
+
+The archive MAY contain a `media/` directory:
+
+```
+document.doceo
+├── manifest.json
+├── content.json
+└── media/
+    ├── <asset_filename>
+    └── ...
+```
+
+### 4.2 Constraints
+
+- `manifest.json` MUST be present.
+- `content.json` MUST be present.
+- All asset files referenced in `manifest.json` under the `assets` field MUST be present in the archive at the path specified by their `path` field.
+- No asset file may be present in the archive without a corresponding entry in the `assets` array of `manifest.json`.
+
+### 4.3 Media Files
+
+Supported media file types:
+
+| Category | Formats |
+|----------|---------|
+| Raster image | `.webp`, `.png`, `.jpg`, `.jpeg`, `.gif` |
+| Video | `.mp4` |
+| Canvas raster | `.png` |
+
+---
+
+## 5. Manifest Specification
+
+### 5.1 Schema
+
+manifest.json MUST be an implementation of the following Manifest interface.
+
+```typescript
+interface Manifest {
+  version:          string       // format version, e.g. "1.0"
+  meta:             DocumentMeta
+  content_filename: string       // always "content.json" in v1.0
+  assets:           Asset[]
+  content_sha256:   string       // hex-encoded SHA-256 of content.json
+  signature?:       string       // HMAC-SHA256 signature (see 5.5)
+}
+
+interface DocumentMeta {
+  id:         string             // UUIDv7
+  title:      string
+  author_id:  string             // UUIDv7 of platform user
+  created_at: string             // ISO 8601, UTC
+  updated_at: string             // ISO 8601, UTC
+}
+
+interface Asset {
+  path:   string                 // relative path within archive, e.g. "media/img_a3f1.webp"
+  sha256: string                 // hex-encoded SHA-256 of asset file content
+}
+```
+
+### 5.2 Field Descriptions
+
+**`version`** — The version of the Doceo format specification to which this document conforms. A reader MUST check this field before processing the document. If the version is higher than the reader supports, the reader SHOULD warn the user.
+
+**`meta.id`** — A UUIDv7 identifier assigned to the document at creation time. This identifier persists across edits and republications. It MUST NOT be changed after initial assignment.
+
+**`meta.author_id`** — The UUIDv7 identifier of the platform user who created the document. Resolution of this identifier to a human-readable name is outside the scope of this specification.
+
+**`meta.created_at`** and **`meta.updated_at`** — ISO 8601 datetime strings in UTC. `updated_at` MUST be updated on every Legal Modification of the document (see section 2).
+
+**`content_filename`** — The filename of the content file within the archive. In version 1.0, this value MUST be `"content.json"`. This field is provided for forward compatibility.
+
+**`assets`** — An inventory of all media files present in the archive. Each entry specifies the file's relative path and its SHA-256 checksum. A reader MAY use this inventory to verify asset integrity before rendering.
+
+**`content_sha256`** — The SHA-256 checksum of `content.json`. This field is included in the signature payload (see 5.5).
+
+### 5.3 Example
+
+```json
+{
+  "version": "1.0",
+  "meta": {
+    "id": "01952f3a-7b4c-7d3e-9f1a-2c4b6d8e0a2f",
+    "title": "Introduction to Python Virtual Environments",
+    "author_id": "01945c2b-1a3d-7e4f-8b2c-3d5a7f9e1c0b",
+    "created_at": "2025-05-06T10:30:00Z",
+    "updated_at": "2025-05-06T14:15:00Z"
+  },
+  "content_filename": "content.json",
+  "assets": [
+    {
+      "path": "media/img_a3f1.webp",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb924..."
+    }
+  ],
+  "content_sha256": "9f86d081884c7d659a2feaa0c55ad015...",
+  "signature": "HS256:5d41402abc4b2a76b9719d911017c592..."
+}
+```
+
+### 5.4 Signature Absence
+
+The `signature` field is OPTIONAL. A document without a signature is valid and processable. The absence of a signature indicates that the document has not been published through or verified by a Doceum platform server.
+
+A reader SHOULD distinguish between three states and communicate them to the user:
+
+| State | Condition |
+|-------|-----------|
+| Unsigned | Signature field absent |
+| Verified | Signature present and valid |
+| Tampered | Signature present but invalid |
+
+### 5.5 Signature Algorithm
+
+The signature is an HMAC-SHA256 value computed by a Doceum platform server using a server-held secret key.
+
+The signature payload is the concatenation of:
+1. The canonical JSON serialization of the `manifest.json` object with the `signature` field omitted
+2. The value of `content_sha256`
+3. The SHA-256 checksum of each asset file, in the order they appear in the `assets` array
+
+The `signature` field value is prefixed with the algorithm identifier: `HS256:<hex-encoded-hmac>`.
+
+---
+
+## 6. Content Specification
+
+### 6.1 Document Root
+
+content.json MUST be an implementation of the following ContentDocument interface.
+
+```typescript
+interface ContentDocument {
+  root: BlockNode[]
+}
+```
+
+**`root`** — The top-level sequence of block nodes. This array MUST contain only Semantic Containers and Semantic Structures. Content Leaves MUST NOT appear directly in `root`.
+
+The authoritative version of the format is declared in `manifest.json` under the `version` field. `content.json` does not carry a version field.
+
+### 6.2 Node Classification
+
+All block nodes are classified into one of three categories:
+
+**Semantic Container** — A node that holds an arbitrary sequence of child block nodes in a `children` array. The nature of the children is governed by layout behavior, not by a fixed schema. Semantic Containers are valid in `root` and in any `children` array.
+
+**Semantic Structure** — A node with a fixed, named contract of typed fields. Some Semantic Structures contain `children`; however, their child composition is semantically constrained (e.g., `tabs` accepts only `tab_item` children). Semantic Structures are valid in `root` unless otherwise specified.
+
+**Content Leaf** — A terminal node carrying a specific content substance. Content Leaves have no block-level children. Content Leaves MUST NOT appear in `root` directly; they MUST appear as a named field value of a Semantic Structure or as a child of a Semantic Container.
+
+The special Content Leaf `text` is never a standalone block node. It appears exclusively as a named field value within Semantic Structures.
+
+### 6.3 Semantic Containers
+
+All Semantic Containers carry the following base fields:
+
+```typescript
+interface SemanticContainerBase {
+  id:       NodeId
+  type:     string
+  children: BlockNode[]
+}
+```
+
+Next, the semantic containers present in `.doceo` of 1.0 version are described.
+
+#### 6.3.1 container
+
+A neutral grouping block with no semantic role or behavior.
+
+```typescript
+interface ContainerNode {
+  id:       NodeId
+  type:     "container"
+  children: BlockNode[]
+}
+```
+
+#### 6.3.2 list
+
+An ordered, unordered, or checklist-style list.
+
+```typescript
+interface ListNode {
+  id:        NodeId
+  type:      "list"
+  list_type: "ordered" | "unordered" | "checklist"
+  children:  BlockNode[]
+}
+```
+
+Children SHOULD be `paragraph` nodes. A `list` node MAY appear as a child of another `list` node to represent a nested list.
+
+When `list_type` is `"checklist"`, each child represents a checkable item. The checked or unchecked state of checklist items is ephemeral and managed exclusively by the reader. It is not persisted in the document.
+
+#### 6.3.3 accordion
+
+A collapsible block. Displays a label and toggles visibility of its children. When multiple independent collapsible sections are required, multiple `accordion` nodes SHOULD be used.
+
+```typescript
+interface AccordionNode {
+  id:       NodeId
+  type:     "accordion"
+  label:    Text
+  children: BlockNode[]
+}
+```
+
+#### 6.3.4 tabs
+
+A tabbed container. Exactly one child is visible at a time, selected by the reader. Children MUST be `tab_item` nodes.
+
+```typescript
+interface TabsNode {
+  id:       NodeId
+  type:     "tabs"
+  children: TabItemNode[]
+}
+
+interface TabItemNode {
+  id:       NodeId
+  type:     "tab_item"
+  label:    Text
+  children: BlockNode[]
+}
+```
+
+`tab_item` nodes MUST NOT appear outside a `tabs` node.
+
+#### 6.3.5 stepper
+
+A sequential step-by-step block. Exactly one child is visible at a time. Navigation is restricted to adjacent steps (previous / next). Children MUST be `step_item` nodes.
+
+```typescript
+interface StepperNode {
+  id:       NodeId
+  type:     "stepper"
+  children: StepItemNode[]
+}
+
+interface StepItemNode {
+  id:       NodeId
+  type:     "step_item"
+  label:    Text
+  children: BlockNode[]
+}
+```
+
+`step_item` nodes MUST NOT appear outside a `stepper` node.
+
+#### 6.3.6 gallery
+
+A cyclic sequential display of children. Navigation moves forward and backward through children in a looping sequence. Children MAY be `container` nodes wrapping a single `image`.
+
+```typescript
+interface GalleryNode {
+  id:       NodeId
+  type:     "gallery"
+  children: BlockNode[]
+}
+```
+
+#### 6.3.7 callout
+
+A semantically highlighted block used for notices, warnings, tips, or danger alerts.
+
+```typescript
+interface CalloutNode {
+  id:           NodeId
+  type:         "callout"
+  callout_type: "info" | "warning" | "danger" | "tip"
+  children:     BlockNode[]
+}
+```
+
+#### 6.3.8 quote
+
+A block quotation.
+
+```typescript
+interface QuoteNode {
+  id:       NodeId
+  type:     "quote"
+  children: BlockNode[]
+}
+```
+
+### 6.4 Semantic Structures
+
+#### 6.4.1 paragraph
+
+A body text block. The sole semantic wrapper for rich text in flow context.
+
+```typescript
+interface ParagraphNode {
+  id:      NodeId
+  type:    "paragraph"
+  content: Text
+}
+```
+
+#### 6.4.2 heading
+
+A section heading with a hierarchical level.
+
+```typescript
+interface HeadingNode {
+  id:      NodeId
+  type:    "heading"
+  level:   1 | 2 | 3 | 4 | 5 | 6
+  content: Text
+}
+```
+
+#### 6.4.3 figure
+
+A media element paired with a caption.
+
+```typescript
+interface FigureNode {
+  id:      NodeId
+  type:    "figure"
+  media:   ImageLeaf | VideoLeaf | CanvasLeaf
+  caption: Text
+}
+```
+
+#### 6.4.4 table
+
+A two-dimensional data structure with an optional caption.
+
+```typescript
+interface TableNode {
+  id:       NodeId
+  type:     "table"
+  caption?: Text
+  head:     TableSection
+  body:     TableSection
+}
+
+interface TableSection {
+  rows: TableRow[]
+}
+
+interface TableRow {
+  id:    NodeId
+  cells: TableCell[]
+}
+
+interface TableCell {
+  id:        NodeId
+  is_header: boolean
+  content:   Text
+}
+```
+
+`row` and `cell` nodes MUST NOT appear outside a `table` node.
+
+#### 6.4.5 quiz
+
+An interactive self-assessment block.
+
+```typescript
+interface QuizNode {
+  id:         NodeId
+  type:       "quiz"
+  input_type: "radio" | "checkbox" | "text"
+  question:   QuizQuestion
+  options?:   QuizOption[]    // required when input_type is "radio" or "checkbox"
+  correct?:   string[]        // option ids; required when input_type is "radio" or "checkbox"
+  correct_text?: CorrectText  // required when input_type is "text"
+}
+
+interface QuizQuestion {
+  children: BlockNode[]
+}
+
+interface QuizOption {
+  id:       string
+  children: (Text | ImageLeaf)[]
+}
+
+interface CorrectText {
+  match:   "exact" | "regex"
+  pattern: string
+  flags?:  string             // regex flags, e.g. "i"
+}
+```
+
+`QuizOption.children` MUST contain at most one `Text` element and at most one `ImageLeaf` element. A `QuizOption` with no children is invalid.
+
+#### 6.4.6 divider
+
+A thematic break between content sections. Carries no content fields.
+
+```typescript
+interface DividerNode {
+  id:   NodeId
+  type: "divider"
+}
+```
+
+`divider` is a Semantic Structure and is valid in `root` and `children` arrays.
+
+### 6.5 Content Leaves
+
+#### 6.5.1 text
+
+The sole carrier of rich inline content. `text` is never a standalone block node. It appears exclusively as a named field value in Semantic Structures.
+
+```typescript
+interface Text {
+  type:    "text"
+  inlines: InlineNode[]
+}
+```
+
+#### 6.5.2 image
+
+The sole carrier of raster or vector image.
+
+```typescript
+interface ImageLeaf {
+  id:   NodeId
+  type: "image"
+  src:  string    // asset path, e.g. "media/img_a3f1.webp"
+  alt:  string    // non-empty alternative text
+}
+```
+
+#### 6.5.3 video
+
+A video resource, either embedded as an asset or referenced by URL.
+
+```typescript
+interface VideoLeaf {
+  id:           NodeId
+  type:         "video"
+  src_type:     "file" | "url"
+  src:          string          // asset path or URL
+  aspect_ratio?: string         // e.g. "16:9"
+}
+```
+
+#### 6.5.4 code
+
+A block of source code.
+
+```typescript
+interface CodeLeaf {
+  id:       NodeId
+  type:     "code"
+  language: string    // language identifier, e.g. "python", "bash"
+  code:     string
+}
+```
+
+#### 6.5.5 formula
+
+A block-level mathematical expression in LaTeX notation.
+
+```typescript
+interface FormulaLeaf {
+  id:     NodeId
+  type:   "formula"
+  latex:  string
+}
+```
+
+#### 6.5.6 canvas
+
+A raster drawing created by the document author.
+
+```typescript
+interface CanvasLeaf {
+  id:     NodeId
+  type:   "canvas"
+  width:  number    // in pixels
+  height: number    // in pixels
+  src:    string    // asset path to PNG file
+}
+```
+
+#### 6.5.7 diagram
+
+A diagram defined in a formal text-based syntax.
+
+```typescript
+interface DiagramLeaf {
+  id:     NodeId
+  type:   "diagram"
+  syntax: "mermaid"
+  code:   string
+}
+```
+
+---
+
+## 7. Inline Model
+
+Inline nodes exist exclusively within `Text` objects. They form a recursive tree of typed segments.
+
+```typescript
+type InlineNode = SpanInline
+               | InlineCodeInline
+               | InlineFormulaInline
+               | CopySnippetInline
+               | LinkInline
+               | AnchorLinkInline
+               | SpoilerInline
+
+type Mark = "bold" | "italic" | "underline" | "strikethrough"
+```
+
+### 7.1 Inline Terminals
+
+Inline Terminals are leaf-level inline nodes. They carry text content and have no inline children.
+
+#### span
+
+A run of plain or styled text.
+
+```typescript
+interface SpanInline {
+  type:  "span"
+  text:  string
+  marks: Mark[]
+}
+```
+
+`marks` MAY be an empty array. Multiple marks MAY be applied simultaneously.
+
+#### inline_code
+
+A run of code within a text flow. Rendered in a monospace typeface. No marks are applied.
+
+```typescript
+interface InlineCodeInline {
+  type: "inline_code"
+  code: string
+}
+```
+
+#### inline_formula
+
+An inline mathematical expression in LaTeX notation.
+
+```typescript
+interface InlineFormulaInline {
+  type:  "inline_formula"
+  latex: string
+}
+```
+
+#### copy_snippet
+
+A plain text segment accompanied by a copy-to-clipboard affordance. The copied content is always plain text.
+
+```typescript
+interface CopySnippetInline {
+  type: "copy_snippet"
+  text: string
+}
+```
+
+### 7.2 Inline Wrappers
+
+Inline Wrappers carry semantic behavior and contain other inline nodes as children.
+
+#### link
+
+A hyperlink to an external URL.
+
+```typescript
+interface LinkInline {
+  type:    "link"
+  href:    string        // absolute URL
+  content: InlineNode[]
+}
+```
+
+#### anchor_link
+
+A hyperlink to a block node within the same document, identified by its `id`.
+
+```typescript
+interface AnchorLinkInline {
+  type:      "anchor_link"
+  target_id: NodeId
+  content:   InlineNode[]
+}
+```
+
+#### spoiler
+
+An inline segment hidden by default and revealed on user interaction.
+
+```typescript
+interface SpoilerInline {
+  type:    "spoiler"
+  content: InlineNode[]
+}
+```
+
+---
+
+## 8. Validation Rules
+
+The following invariants define a valid Doceo document. A conforming validator MUST report a violation for each invariant that is not satisfied.
+
+| ID | Scope | Rule |
+|----|-------|------|
+| INV-001 | Document | Every `id` value MUST be unique within the document |
+| INV-002 | root | `root` MUST contain only Semantic Containers and Semantic Structures. Content Leaves MUST NOT appear in `root` |
+| INV-003 | text | `text` MUST NOT appear as a standalone block in `root` or `children` arrays. It MUST appear only as a named field value |
+| INV-004 | Inline | Inline nodes MUST exist only within `Text` objects. They MUST NOT appear as block nodes |
+| INV-005 | tabs | `children` of a `tabs` node MUST contain only `tab_item` nodes |
+| INV-006 | stepper | `children` of a `stepper` node MUST contain only `step_item` nodes |
+| INV-007 | tab_item | `tab_item` nodes MUST NOT appear outside a `tabs` node |
+| INV-008 | step_item | `step_item` nodes MUST NOT appear outside a `stepper` node |
+| INV-009 | figure | The `media` field of `figure` MUST be one of: `image`, `video`, `canvas` |
+| INV-010 | table | `row` nodes MUST NOT appear outside a `table` node. `cell` nodes MUST NOT appear outside a `row` node |
+| INV-011 | quiz | When `input_type` is `"radio"` or `"checkbox"`, the `options` and `correct` fields MUST be present |
+| INV-012 | quiz | When `input_type` is `"text"`, the `correct_text` field MUST be present |
+| INV-013 | anchor_link | The `target_id` of an `anchor_link` MUST reference a node `id` that exists within the same document |
+| INV-014 | assets | Every asset path referenced in `content.json` MUST have a corresponding entry in `manifest.json` under `assets` |
+| INV-015 | assets | Every entry in `manifest.json` under `assets` MUST correspond to a file present in the archive |
+| INV-016 | quiz | `QuizOption.children` MUST contain at most one `Text` element and at most one `ImageLeaf` element. A `QuizOption` with no children is invalid |
+
+---
+
+## 9. Versioning and Compatibility
+
+### 9.1 Version Identifier
+
+The format version is a string of the form `MAJOR.MINOR`, e.g. `"1.0"`.
+
+- A **MINOR** version increment indicates additive changes only: new optional fields, new node types, new inline types, new enum values. Backward compatibility is preserved.
+- A **MAJOR** version increment indicates breaking changes: removal of fields, rename of fields, change of semantics of existing node types.
+
+### 9.2 Backward Compatibility Contract
+
+A reader implementing version N.x MUST be able to process any document with version N.y where y ≤ x, subject to the following rules:
+
+1. Unknown fields on any node MUST be ignored.
+2. Unknown `type` values on block nodes MUST be treated as described in section 3.5.
+3. Unknown `type` values on inline nodes MUST be treated as an empty fragment.
+4. Unknown enum values (e.g., unknown `callout_type`, `list_type`) MUST be treated as the default value for that field where one exists, or ignored otherwise.
+
+### 9.3 Forward Compatibility
+
+A reader implementing version N SHOULD NOT attempt to process documents with version M where M > N without issuing a warning. The reader MAY attempt best-effort rendering while ignoring unknown constructs per the rules in 9.2.
+
+---
+
+## 10. Appendix A — Full Node Reference
+
+| Type | Class | Valid in root/children | Key Fields |
+|------|-------|-----------------------|------------|
+| `container` | Semantic Container | yes | `children[]` |
+| `list` | Semantic Container | yes | `children[]`, `list_type` |
+| `accordion` | Semantic Container | yes | `label`, `children[]` |
+| `tabs` | Semantic Container | yes | `children: tab_item[]` |
+| `tab_item` | Semantic Container | tabs only | `label`, `children[]` |
+| `stepper` | Semantic Container | yes | `children: step_item[]` |
+| `step_item` | Semantic Container | stepper only | `label`, `children[]` |
+| `gallery` | Semantic Container | yes | `children[]` |
+| `callout` | Semantic Container | yes | `children[]`, `callout_type` |
+| `quote` | Semantic Container | yes | `children[]` |
+| `paragraph` | Semantic Structure | yes | `content: Text` |
+| `heading` | Semantic Structure | yes | `content: Text`, `level` |
+| `figure` | Semantic Structure | yes | `media`, `caption: Text` |
+| `table` | Semantic Structure | yes | `head`, `body`, `caption?` |
+| `row` | Semantic Structure | table only | `cells[]` |
+| `cell` | Semantic Structure | row only | `content: Text`, `is_header` |
+| `quiz` | Semantic Structure | yes | `question`, `options[]`, `input_type`, `correct` |
+| `divider` | Semantic Structure | yes | — |
+| `text` | Content Leaf | field value only | `inlines[]` |
+| `image` | Content Leaf | container/field only | `src`, `alt` |
+| `video` | Content Leaf | container/field only | `src_type`, `src` |
+| `code` | Content Leaf | container/field only | `language`, `code` |
+| `formula` | Content Leaf | container/field only | `latex` |
+| `canvas` | Content Leaf | container/field only | `width`, `height`, `src` |
+| `diagram` | Content Leaf | container/field only | `syntax`, `code` |
+| `span` | Inline Terminal | text only | `text`, `marks[]` |
+| `inline_code` | Inline Terminal | text only | `code` |
+| `inline_formula` | Inline Terminal | text only | `latex` |
+| `copy_snippet` | Inline Terminal | text only | `text` |
+| `link` | Inline Wrapper | text only | `href`, `content[]` |
+| `anchor_link` | Inline Wrapper | text only | `target_id`, `content[]` |
+| `spoiler` | Inline Wrapper | text only | `content[]` |
+
+---
+
+## 11. Appendix B — Full Document Example
+
+The following example represents a partial guide on Python virtual environments. It demonstrates the use of all major node types defined in this specification.
+
+```json
+{
+  "root": [
+    {
+      "id": "a1b2c3d4",
+      "type": "heading",
+      "level": 1,
+      "content": {
+        "type": "text",
+        "inlines": [
+          { "type": "span", "text": "Python Virtual Environments", "marks": [] }
+        ]
+      }
+    },
+    {
+      "id": "b2c3d4e5",
+      "type": "paragraph",
+      "content": {
+        "type": "text",
+        "inlines": [
+          { "type": "span", "text": "This guide covers creation and activation of ", "marks": [] },
+          { "type": "inline_code", "code": "venv" },
+          { "type": "span", "text": " environments.", "marks": [] }
+        ]
+      }
+    },
+    {
+      "id": "c3d4e5f6",
+      "type": "callout",
+      "callout_type": "info",
+      "children": [
+        {
+          "id": "d4e5f6g7",
+          "type": "paragraph",
+          "content": {
+            "type": "text",
+            "inlines": [
+              { "type": "span", "text": "Requires Python ", "marks": [] },
+              { "type": "inline_code", "code": "3.3+" },
+              { "type": "span", "text": ". Verify with ", "marks": [] },
+              { "type": "copy_snippet", "text": "python --version" },
+              { "type": "span", "text": ".", "marks": [] }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "e5f6g7h8",
+      "type": "tabs",
+      "children": [
+        {
+          "id": "f6g7h8i9",
+          "type": "tab_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Unix / macOS", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "g7h8i9j0",
+              "type": "container",
+              "children": [
+                {
+                  "id": "h8i9j0k1",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "source venv/bin/activate"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "i9j0k1l2",
+          "type": "tab_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Windows", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "j0k1l2m3",
+              "type": "container",
+              "children": [
+                {
+                  "id": "k1l2m3n4",
+                  "type": "code",
+                  "language": "bat",
+                  "code": "venv\\Scripts\\activate.bat"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "l2m3n4o5",
+      "type": "stepper",
+      "children": [
+        {
+          "id": "m3n4o5p6",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Create the environment", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "n4o5p6q7",
+              "type": "container",
+              "children": [
+                {
+                  "id": "o5p6q7r8",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "python -m venv venv"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "p6q7r8s9",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Activate the environment", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "q7r8s9t0",
+              "type": "paragraph",
+              "content": {
+                "type": "text",
+                "inlines": [
+                  { "type": "span", "text": "See the ", "marks": [] },
+                  {
+                    "type": "anchor_link",
+                    "target_id": "e5f6g7h8",
+                    "content": [{ "type": "span", "text": "activation tabs above", "marks": [] }]
+                  },
+                  { "type": "span", "text": ".", "marks": [] }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "r8s9t0u1",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Install dependencies", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "s9t0u1v2",
+              "type": "container",
+              "children": [
+                {
+                  "id": "t0u1v2w3",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "pip install -r requirements.txt"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1v2w3x4",
+      "type": "divider"
+    },
+    {
+      "id": "v2w3x4y5",
+      "type": "quiz",
+      "input_type": "radio",
+      "question": {
+        "children": [
+          {
+            "id": "w3x4y5z6",
+            "type": "paragraph",
+            "content": {
+              "type": "text",
+              "inlines": [
+                { "type": "span", "text": "Which command activates the environment on Unix?", "marks": [] }
+              ]
+            }
+          }
+        ]
+      },
+      "options": [
+        {
+          "id": "opt1",
+          "children": [
+            { "type": "text", "inlines": [{ "type": "inline_code", "code": "venv\\Scripts\\activate.bat" }] }
+          ]
+        },
+        {
+          "id": "opt2",
+          "children": [
+            { "type": "text", "inlines": [{ "type": "inline_code", "code": "source venv/bin/activate" }] }
+          ]
+        }
+      ],
+      "correct": ["opt2"]
+    },
+    {
+      "id": "x4y5z6a7",
+      "type": "accordion",
+      "label": {
+        "type": "text",
+        "inlines": [{ "type": "span", "text": "Common errors and solutions", "marks": [] }]
+      },
+      "children": [
+        {
+          "id": "y5z6a7b8",
+          "type": "callout",
+          "callout_type": "danger",
+          "children": [
+            {
+              "id": "z6a7b8c9",
+              "type": "paragraph",
+              "content": {
+                "type": "text",
+                "inlines": [
+                  { "type": "span", "text": "If you see ", "marks": [] },
+                  { "type": "inline_code", "code": "command not found: python" },
+                  { "type": "span", "text": ", try ", "marks": [] },
+                  { "type": "inline_code", "code": "python3" },
+                  { "type": "span", "text": " instead.", "marks": [] }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
