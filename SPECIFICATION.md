@@ -763,7 +763,7 @@ interface SpoilerInline {
 The following invariants define a valid Doceo document. A conforming validator MUST report a violation for each invariant that is not satisfied.
 
 | ID | Scope | Rule |
-|----|-------|------|
+|-------------|-------|------|
 | INV-001 | Document | Every `id` value MUST be unique within the document |
 | INV-002 | root | `root` MUST contain only Semantic Containers and Semantic Structures. Content Leaves MUST NOT appear in `root` |
 | INV-003 | text | `text` MUST NOT appear as a standalone block in `root` or `children` arrays. It MUST appear only as a named field value |
@@ -780,6 +780,7 @@ The following invariants define a valid Doceo document. A conforming validator M
 | INV-014 | assets | Every asset path referenced in `content.json` MUST have a corresponding entry in `manifest.json` under `assets` |
 | INV-015 | assets | Every entry in `manifest.json` under `assets` MUST correspond to a file present in the archive |
 | INV-016 | quiz | `QuizOption.children` MUST contain at most one `Text` element and at most one `ImageLeaf` element. A `QuizOption` with no children is invalid |
+| &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | | |
 
 ---
 
