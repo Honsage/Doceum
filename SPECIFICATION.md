@@ -18,7 +18,7 @@
    - 6.2 [Node Classification](#62-node-classification)
    - 6.3 [Semantic Containers](#63-semantic-containers)
    - 6.4 [Semantic Structures](#64-semantic-structures)
-   - 6.5 [Content Leaves](#65-content-leaves)
+   - 6.5 [Content Carriers](#65-content-carriers)
 7. [Inline Model](#7-inline-model)
 8. [Validation Rules](#8-validation-rules)
 9. [Versioning and Compatibility](#9-versioning-and-compatibility)
@@ -82,11 +82,11 @@ These properties together guarantee that a `.doceo` file is fully portable and i
 
 **Semantic Structure** — A node with a fixed, named set of typed fields. Child composition is defined by the schema, not by a generic `children` array.
 
-**Content Leaf** — A terminal node that carries a specific content substance (rich text, raster image, video, code, formula, canvas, diagram). Content Leaves have no block-level children.
+**Content Carrier** — A terminal node that carries a specific content substance (rich text, raster image, video, code, formula, canvas, diagram). Content Carriers have no block-level children.
 
-**Text** — A Content Leaf carrying a sequence of inline nodes. `text` is never a standalone block in the document tree; it appears exclusively as a named field value within Semantic Structures.
+**Text** — A Content Carrier carrying a sequence of inline nodes. `text` is never a standalone block in the document tree; it appears exclusively as a named field value within Semantic Structures.
 
-**Inline Node** — An element that exists within a `text` Content Leaf. Inline nodes form the rich text content model.
+**Inline Node** — An element that exists within a `text` Content Carrier. Inline nodes form the rich text content model.
 
 **Discriminated Union** — A JSON object whose type is unambiguously determined by the value of its `type` field.
 
@@ -288,7 +288,7 @@ interface ContentDocument {
 }
 ```
 
-**`root`** — The top-level sequence of block nodes. This array MUST contain only Semantic Containers and Semantic Structures. Content Leaves MUST NOT appear directly in `root`.
+**`root`** — The top-level sequence of block nodes. This array MUST contain only Semantic Containers and Semantic Structures. Content Carriers MUST NOT appear directly in `root`.
 
 The authoritative version of the format is declared in `manifest.json` under the `version` field. `content.json` does not carry a version field.
 
@@ -300,9 +300,9 @@ All block nodes are classified into one of three categories:
 
 **Semantic Structure** — A node with a fixed, named contract of typed fields. Some Semantic Structures contain `children`; however, their child composition is semantically constrained (e.g., `tabs` accepts only `tab_item` children). Semantic Structures are valid in `root` unless otherwise specified.
 
-**Content Leaf** — A terminal node carrying a specific content substance. Content Leaves have no block-level children. Content Leaves MUST NOT appear in `root` directly; they MUST appear as a named field value of a Semantic Structure or as a child of a Semantic Container.
+**Content Carrier** — A terminal node carrying a specific content substance. Content Carriers have no block-level children. Content Carriers MUST NOT appear in `root` directly; they MUST appear as a named field value of a Semantic Structure or as a child of a Semantic Container.
 
-The special Content Leaf `text` is never a standalone block node. It appears exclusively as a named field value within Semantic Structures.
+The special Content Carrier `text` is never a standalone block node. It appears exclusively as a named field value within Semantic Structures.
 
 ### 6.3 Semantic Containers
 
@@ -556,8 +556,7 @@ interface DividerNode {
 
 `divider` is a Semantic Structure and is valid in `root` and `children` arrays.
 
-### 6.5 Content Leaves
-
+### 6.5 Content Carriers
 #### 6.5.1 text
 
 The sole carrier of rich inline content. `text` is never a standalone block node. It appears exclusively as a named field value in Semantic Structures.
@@ -765,7 +764,7 @@ The following invariants define a valid Doceo document. A conforming validator M
 | ID | Scope | Rule |
 |-------------|-------|------|
 | INV-001 | Document | Every `id` value MUST be unique within the document |
-| INV-002 | root | `root` MUST contain only Semantic Containers and Semantic Structures. Content Leaves MUST NOT appear in `root` |
+| INV-002 | root | `root` MUST contain only Semantic Containers and Semantic Structures. Content Carriers MUST NOT appear in `root` |
 | INV-003 | text | `text` MUST NOT appear as a standalone block in `root` or `children` arrays. It MUST appear only as a named field value |
 | INV-004 | Inline | Inline nodes MUST exist only within `Text` objects. They MUST NOT appear as block nodes |
 | INV-005 | tabs | `children` of a `tabs` node MUST contain only `tab_item` nodes |
@@ -830,13 +829,13 @@ A reader implementing version N SHOULD NOT attempt to process documents with ver
 | `cell` | Semantic Structure | row only | `content: Text`, `is_header` |
 | `quiz` | Semantic Structure | yes | `question`, `options[]`, `input_type`, `correct` |
 | `divider` | Semantic Structure | yes | — |
-| `text` | Content Leaf | field value only | `inlines[]` |
-| `image` | Content Leaf | container/field only | `src`, `alt` |
-| `video` | Content Leaf | container/field only | `src_type`, `src` |
-| `code` | Content Leaf | container/field only | `language`, `code` |
-| `formula` | Content Leaf | container/field only | `latex` |
-| `canvas` | Content Leaf | container/field only | `width`, `height`, `src` |
-| `diagram` | Content Leaf | container/field only | `syntax`, `code` |
+| `text` | Content Carrier | field value only | `inlines[]` |
+| `image` | Content Carrier | container/field only | `src`, `alt` |
+| `video` | Content Carrier | container/field only | `src_type`, `src` |
+| `code` | Content Carrier | container/field only | `language`, `code` |
+| `formula` | Content Carrier | container/field only | `latex` |
+| `canvas` | Content Carrier | container/field only | `width`, `height`, `src` |
+| `diagram` | Content Carrier | container/field only | `syntax`, `code` |
 | `span` | Inline Terminal | text only | `text`, `marks[]` |
 | `inline_code` | Inline Terminal | text only | `code` |
 | `inline_formula` | Inline Terminal | text only | `latex` |
