@@ -8,4 +8,4 @@ Interactive learning documents based on special document format `.doceo`. Its sp
 
 ## UI Design
 
-Design of the frontend is made with Figma. It is open and presented in [Figma Repository](https://www.figma.com/design/h2aHFylxpKfKS4xWCtTkc3/Didacticum?m=auto&t=o5MiUEdpIDzgDPtl-6).
+Design of the frontend is made with Figma. It is open and presented in [Figma Repository](https://www.figma.com/design/syDWeHawJRQ0vODRcVIC62/Doceum?node-id=0-1&p=f&t=Jv7lH1h0MbIGVVvx-0).
