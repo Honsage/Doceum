@@ -1,3 +1,42 @@
 spring:
   application:
     name: doceum-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/doceum
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+    show-sql: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+jwt:
+  secret: ${JWT_SECRET:mySuperSecretKeyForJWTThatMustBeAtLeast32CharactersLong}
+  access-token-ttl-ms: 900000  # 15 минут
+
+server:
+  port: 8080
+
+logging:
+  level:
+    ru.doceum: DEBUG
+    org.springframework.security: WARN
