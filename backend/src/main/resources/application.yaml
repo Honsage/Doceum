@@ -40,3 +40,12 @@ logging:
   level:
     ru.doceum: DEBUG
     org.springframework.security: WARN
+
+storage:
+  root: ${STORAGE_ROOT:./storage}
+  drafts: drafts
+  publications: publications
+
+doceum:
+  signing:
+    secret: ${DOCEO_SIGNING_SECRET:defaultSecretKeyForDevOnlyPleaseChangeInProduction}
