@@ -18,6 +18,7 @@ import ru.doceum.modules.documents.infrastructure.services.DoceoParser;
 import ru.doceum.modules.documents.infrastructure.services.DoceoSigner;
 import ru.doceum.modules.documents.infrastructure.storage.FileStorageService;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -39,11 +40,13 @@ public class DocumentApplicationService {
     public UUID createDocument(UUID authorId, CreateDocumentRequest request) {
         UUID documentId = UUID.randomUUID();
 
-        // Генерируем минимальный .doceo
-        byte[] minimalDoceo = doceoGenerator.generateMinimal(request.getTitle(), documentId);
+        // Генерируем минимальный .doceo с реальным authorId
+        byte[] minimalDoceo = doceoGenerator.generateMinimal(request.getTitle(), documentId, authorId);
 
         // Сохраняем файл
         String filePath = fileStorageService.saveDraft(authorId, documentId, minimalDoceo);
+
+        // Вычисляем content_sha256
         String contentSha256 = doceoParser.calculateContentSha256(minimalDoceo);
 
         // Создаём запись в БД
@@ -58,7 +61,7 @@ public class DocumentApplicationService {
     }
 
     @Transactional
-    public void saveDraft(UUID documentId, UUID userId, MultipartFile file) {
+    public void saveDraft(UUID documentId, UUID userId, MultipartFile file) throws IOException {
         Document document = documentRepository.findByIdAndAuthorId(documentId, userId)
                 .orElseThrow(() -> new RuntimeException("Document not found or access denied"));
 
@@ -111,12 +114,17 @@ public class DocumentApplicationService {
         // Загружаем черновик
         byte[] draftContent = fileStorageService.loadFile(document.getFilePath());
 
-        // Подписываем
-        byte[] signedContent = doceoSigner.sign(draftContent);
+        // Подготавливаем документ к публикации (обновляем content_sha256, updated_at, подписываем)
+        byte[] signedContent = doceoSigner.prepareForPublication(draftContent);
+
+        // Извлекаем подпись
+        String signature = doceoSigner.extractSignature(signedContent);
+
+        // Пересчитываем content_sha256 для публикации (должен совпадать с тем, что в manifest)
+        String contentSha256 = doceoParser.calculateContentSha256(signedContent);
 
         // Сохраняем подписанный файл
         String publishedFilePath = fileStorageService.savePublication(documentId, signedContent);
-        String signature = doceoSigner.extractSignature(signedContent);
 
         // Создаём публикацию
         Publication publication = Publication.fromDocument(document, publishedFilePath, signature);
@@ -125,7 +133,10 @@ public class DocumentApplicationService {
         // Обновляем статус документа
         document.publish();
         documentRepository.save(document);
+
+        log.info("Document {} published with content_sha256: {}", documentId, contentSha256);
     }
+
 
     @Transactional
     public void unpublish(UUID documentId, UUID userId) {
@@ -169,7 +180,7 @@ public class DocumentApplicationService {
                 document.getId().toString(),
                 publication != null ? publication.getTitle() : document.getTitle(),
                 publication != null ? publication.getDescription() : document.getDescription(),
-                new AuthorInfo(authorInfo.id().toString(), authorInfo.fullName()),
+                new AuthorInfoResponse(authorInfo.id().toString(), authorInfo.fullName()),
                 document.getStatus().name(),
                 publishedAt,
                 document.getUpdatedAt().toString()
@@ -177,7 +188,7 @@ public class DocumentApplicationService {
     }
 
     public VerifyResponse verify(byte[] doceoContent) {
-        // Проверяем целостность
+        // Проверяем целостность (content_sha256 из manifest vs реальный хэш content.json)
         if (!doceoParser.isIntegrityValid(doceoContent)) {
             return new VerifyResponse(false, "tampered", null, null, null);
         }
@@ -194,7 +205,7 @@ public class DocumentApplicationService {
             return new VerifyResponse(false, "tampered", null, null, null);
         }
 
-        // Подпись валидна. Пытаемся найти документ в БД по UUID
+        // Подпись валидна. Извлекаем documentId из manifest
         UUID documentId = doceoParser.extractDocumentId(doceoContent);
         if (documentId != null) {
             return documentRepository.findById(documentId)
