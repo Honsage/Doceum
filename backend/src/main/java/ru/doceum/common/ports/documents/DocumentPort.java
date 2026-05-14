@@ -9,4 +9,6 @@ public interface DocumentPort {
     Optional<DocumentFile> getPublicationFile(UUID documentId);
     List<DocumentMetadata> getUserDocuments(UUID authorId);
     boolean existsPublished(UUID documentId);
+    List<DocumentMetadata> getAllPublishedDocuments();
+    List<DocumentMetadata> getPublishedDocumentsByAuthorId(UUID authorId);
 }
