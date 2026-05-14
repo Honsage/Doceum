@@ -5,8 +5,11 @@ import ru.doceum.modules.auth.domain.repositories.UserRepository;
 import ru.doceum.modules.auth.domain.valueobjects.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -30,6 +33,14 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<User> findById(UUID id) {
         return jpaRepository.findById(id)
                 .map(UserEntity::toDomain);
+    }
+
+    @Override
+    public List<User> findByFullNameContaining(String query) {
+        return jpaRepository.findByFullNameContaining(query)
+                .stream()
+                .map(UserEntity::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
