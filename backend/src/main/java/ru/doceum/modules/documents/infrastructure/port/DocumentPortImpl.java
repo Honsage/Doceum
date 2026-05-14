@@ -6,6 +6,7 @@ import ru.doceum.common.ports.documents.DocumentFile;
 import ru.doceum.common.ports.documents.DocumentMetadata;
 import ru.doceum.common.ports.documents.DocumentPort;
 import ru.doceum.modules.documents.application.services.DocumentApplicationService;
+import ru.doceum.modules.documents.domain.models.DocumentStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,9 @@ public class DocumentPortImpl implements DocumentPort {
                 UUID.fromString(response.getAuthor().getId()),
                 response.getStatus(),
                 response.getPublishedAt(),
-                response.getUpdatedAt()
+                response.getUpdatedAt(),
+                null,  // contentSha256 пока не возвращаем через этот метод
+                response.getStatus().equals("PUBLISHED")
         );
     }
 
@@ -43,13 +46,6 @@ public class DocumentPortImpl implements DocumentPort {
     }
 
     @Override
-    public List<DocumentMetadata> getUserDocuments(UUID authorId) {
-        // Временно: получаем через репозиторий, потом сделаем отдельный метод в сервисе
-        // Для MVP можно напрямую из репозитория, но пока заглушка
-        return List.of();
-    }
-
-    @Override
     public boolean existsPublished(UUID documentId) {
         try {
             documentService.getPublicationFile(documentId);
@@ -57,5 +53,46 @@ public class DocumentPortImpl implements DocumentPort {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    @Override
+    public List<DocumentMetadata> getAllPublishedDocuments() {
+        return documentService.getAllPublishedDocuments().stream()
+                .map(doc -> new DocumentMetadata(
+                        doc.getId(),
+                        doc.getTitle(),
+                        doc.getDescription(),
+                        doc.getAuthorId(),
+                        doc.getStatus().name(),
+                        doc.getPublishedAt() != null ? doc.getPublishedAt().toString() : null,
+                        doc.getUpdatedAt().toString(),
+                        doc.getContentSha256(),
+                        true
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DocumentMetadata> getUserDocuments(UUID authorId) {
+        // Временно: получаем через репозиторий, потом сделаем отдельный метод в сервисе
+        // Для MVP можно напрямую из репозитория, но пока заглушка
+        return List.of();
+    }
+
+    @Override
+    public List<DocumentMetadata> getPublishedDocumentsByAuthorId(UUID authorId) {
+        return documentService.getPublishedDocumentsByAuthorId(authorId).stream()
+                .map(doc -> new DocumentMetadata(
+                        doc.getId(),
+                        doc.getTitle(),
+                        doc.getDescription(),
+                        doc.getAuthorId(),
+                        doc.getStatus().name(),
+                        doc.getPublishedAt() != null ? doc.getPublishedAt().toString() : null,
+                        doc.getUpdatedAt().toString(),
+                        doc.getContentSha256(),
+                        true
+                ))
+                .collect(Collectors.toList());
     }
 }
