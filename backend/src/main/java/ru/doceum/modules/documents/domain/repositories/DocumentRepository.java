@@ -13,6 +13,7 @@ public interface DocumentRepository {
     List<Document> findByAuthorIdAndStatusNot(UUID authorId, DocumentStatus excludedStatus);
     List<Document> findAllPublished();
     List<Document> findPublishedByAuthorId(UUID authorId);
+    List<Document> findByAuthorIdAndStatus(UUID authorId, DocumentStatus status);
     boolean existsById(UUID id);
     void delete(Document document);
 }

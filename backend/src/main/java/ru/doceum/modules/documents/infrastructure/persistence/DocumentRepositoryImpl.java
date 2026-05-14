@@ -58,6 +58,14 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     }
 
     @Override
+    public List<Document> findByAuthorIdAndStatus(UUID authorId, DocumentStatus status) {
+        return jpaRepository.findByAuthorIdAndStatus(authorId, status)
+                .stream()
+                .map(DocumentEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);
     }
