@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -222,5 +223,27 @@ public class DocumentApplicationService {
         }
 
         return new VerifyResponse(true, "verified", null, null, null);
+    }
+
+    public List<DocumentWithPublication> getAllPublishedDocuments() {
+        return documentRepository.findAllPublished()
+                .stream()
+                .map(this::toDocumentWithPublication)
+                .collect(Collectors.toList());
+    }
+
+    public List<DocumentWithPublication> getPublishedDocumentsByAuthorId(UUID authorId) {
+        return documentRepository.findPublishedByAuthorId(authorId)
+                .stream()
+                .map(this::toDocumentWithPublication)
+                .collect(Collectors.toList());
+    }
+
+    private DocumentWithPublication toDocumentWithPublication(Document document) {
+        Publication publication = publicationRepository.findByDocumentId(document.getId()).orElse(null);
+        return new DocumentWithPublication(
+                document,
+                publication
+        );
     }
 }
