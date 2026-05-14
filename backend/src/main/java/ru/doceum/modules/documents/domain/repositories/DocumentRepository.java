@@ -11,6 +11,8 @@ public interface DocumentRepository {
     Optional<Document> findById(UUID id);
     Optional<Document> findByIdAndAuthorId(UUID id, UUID authorId);
     List<Document> findByAuthorIdAndStatusNot(UUID authorId, DocumentStatus excludedStatus);
+    List<Document> findAllPublished();
+    List<Document> findPublishedByAuthorId(UUID authorId);
     boolean existsById(UUID id);
     void delete(Document document);
 }

@@ -10,5 +10,7 @@ import java.util.UUID;
 public interface DocumentJpaRepository extends JpaRepository<DocumentEntity, UUID> {
     Optional<DocumentEntity> findByIdAndAuthorId(UUID id, UUID authorId);
     List<DocumentEntity> findByAuthorIdAndStatusNot(UUID authorId, DocumentStatus excludedStatus);
+    List<DocumentEntity> findByStatus(DocumentStatus status);
+    List<DocumentEntity> findByAuthorIdAndStatus(UUID authorId, DocumentStatus status);
     boolean existsById(UUID id);
 }

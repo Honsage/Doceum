@@ -42,6 +42,22 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     }
 
     @Override
+    public List<Document> findAllPublished() {
+        return jpaRepository.findByStatus(DocumentStatus.PUBLISHED)
+                .stream()
+                .map(DocumentEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Document> findPublishedByAuthorId(UUID authorId) {
+        return jpaRepository.findByAuthorIdAndStatus(authorId, DocumentStatus.PUBLISHED)
+                .stream()
+                .map(DocumentEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);
     }
