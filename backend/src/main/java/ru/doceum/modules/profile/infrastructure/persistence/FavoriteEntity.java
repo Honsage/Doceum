@@ -7,7 +7,6 @@ import lombok.Setter;
 import ru.doceum.modules.profile.domain.models.Favorite;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name = "favorites")
@@ -16,29 +15,23 @@ import java.util.UUID;
 @NoArgsConstructor
 public class FavoriteEntity {
 
-    @Id
-    @Column(name = "user_id", columnDefinition = "UUID")
-    private UUID userId;
-
-    @Id
-    @Column(name = "publication_id", columnDefinition = "UUID")
-    private UUID publicationId;
+    @EmbeddedId
+    private FavoriteId id;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     public static FavoriteEntity fromDomain(Favorite favorite) {
         FavoriteEntity entity = new FavoriteEntity();
-        entity.setUserId(favorite.getUserId());
-        entity.setPublicationId(favorite.getPublicationId());
+        entity.setId(new FavoriteId(favorite.getUserId(), favorite.getPublicationId()));
         entity.setCreatedAt(favorite.getCreatedAt());
         return entity;
     }
 
     public Favorite toDomain() {
         return Favorite.builder()
-                .userId(userId)
-                .publicationId(publicationId)
+                .userId(id.getUserId())
+                .publicationId(id.getPublicationId())
                 .createdAt(createdAt)
                 .build();
     }

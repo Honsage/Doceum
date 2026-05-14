@@ -24,13 +24,13 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
 
     @Override
     public Optional<Favorite> findByUserIdAndPublicationId(UUID userId, UUID publicationId) {
-        return jpaRepository.findByUserIdAndPublicationId(userId, publicationId)
+        return jpaRepository.findByIdUserIdAndIdPublicationId(userId, publicationId)
                 .map(FavoriteEntity::toDomain);
     }
 
     @Override
     public List<Favorite> findByUserIdOrderByCreatedAtDesc(UUID userId) {
-        return jpaRepository.findByUserIdOrderByCreatedAtDesc(userId)
+        return jpaRepository.findByIdUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(FavoriteEntity::toDomain)
                 .collect(Collectors.toList());
@@ -38,12 +38,13 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
 
     @Override
     public void delete(Favorite favorite) {
-        jpaRepository.deleteById(favorite.getPublicationId());
+        FavoriteId id = new FavoriteId(favorite.getUserId(), favorite.getPublicationId());
+        jpaRepository.deleteById(id);
     }
 
     @Override
     public boolean existsByUserIdAndPublicationId(UUID userId, UUID publicationId) {
-        return jpaRepository.existsByUserIdAndPublicationId(userId, publicationId);
+        return jpaRepository.existsByIdUserIdAndIdPublicationId(userId, publicationId);
     }
 
     @Override
