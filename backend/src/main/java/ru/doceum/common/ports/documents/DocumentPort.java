@@ -11,4 +11,5 @@ public interface DocumentPort {
     boolean existsPublished(UUID documentId);
     List<DocumentMetadata> getAllPublishedDocuments();
     List<DocumentMetadata> getPublishedDocumentsByAuthorId(UUID authorId);
+    List<DocumentMetadata> getDocumentsByAuthorIdAndStatus(UUID authorId, String status);
 }
