@@ -26,6 +26,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()
+                        // Hub доступен только READER, AUTHOR, ADMIN
+                        .requestMatchers("/api/hub/**").hasAnyRole("READER", "AUTHOR", "ADMIN")
+                        // Documents: просмотр публикации доступен всем (включая Guest)
+                        .requestMatchers("/api/documents/*/view").permitAll()
+                        .requestMatchers("/api/documents/verify").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
