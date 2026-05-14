@@ -246,4 +246,11 @@ public class DocumentApplicationService {
                 publication
         );
     }
+
+    public List<DocumentWithPublication> getDraftsByAuthorId(UUID authorId) {
+        return documentRepository.findByAuthorIdAndStatus(authorId, DocumentStatus.NOT_PUBLISHED)
+                .stream()
+                .map(this::toDocumentWithPublication)
+                .collect(Collectors.toList());
+    }
 }
