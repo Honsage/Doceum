@@ -12,7 +12,9 @@ export const Heading = ({ block, onAnchorClick }: HeadingProps) => {
 
     return (
         <Tag className={styles.heading}>
-            <InlineRenderer nodes={block.content.inlines} onAnchorClick={onAnchorClick} />
+            {block.content && (
+                <InlineRenderer nodes={block.content.inlines} onAnchorClick={onAnchorClick} />
+            )}
         </Tag>
     );
 };

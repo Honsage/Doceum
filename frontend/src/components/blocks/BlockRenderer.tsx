@@ -3,6 +3,7 @@ import { Heading } from './Heading';
 import { Paragraph } from './Paragraph';
 import { Code } from './Code';
 import { Image } from './Image';
+import { Video } from './Video';
 import { Tabs } from './Tabs';
 import { Stepper } from './Stepper';
 import { Accordion } from './Accordion';
@@ -10,10 +11,10 @@ import { List } from './List';
 import { Callout } from './Callout';
 import { Quote } from './Quote';
 import { Divider } from './Divider';
-import { Video } from './Video';
 import { Quiz } from './Quiz';
 import { Table } from './Table';
 import { Formula } from './Formula';
+import { Container } from './Container';  // ← ДОБАВИТЬ ЭТУ СТРОКУ
 import styles from './BlockRenderer.module.css';
 
 interface BlockRendererProps {
@@ -39,15 +40,6 @@ export const BlockRenderer = ({ block, getMediaUrl, onAnchorClick }: BlockRender
         case 'video':
             return <Video block={block} getMediaUrl={getMediaUrl} />;
 
-        case 'quiz':
-            return <Quiz block={block} getMediaUrl={getMediaUrl} onAnchorClick={onAnchorClick} />;
-
-        case 'table':
-            return <Table block={block} onAnchorClick={onAnchorClick} />;
-
-        case 'formula':
-            return <Formula block={block} />;
-
         case 'tabs':
             return <Tabs block={block} getMediaUrl={getMediaUrl} onAnchorClick={onAnchorClick} />;
 
@@ -68,6 +60,18 @@ export const BlockRenderer = ({ block, getMediaUrl, onAnchorClick }: BlockRender
 
         case 'divider':
             return <Divider />;
+
+        case 'quiz':
+            return <Quiz block={block} getMediaUrl={getMediaUrl} onAnchorClick={onAnchorClick} />;
+
+        case 'table':
+            return <Table block={block} onAnchorClick={onAnchorClick} />;
+
+        case 'formula':
+            return <Formula block={block} />;
+
+        case 'container':
+            return <Container block={block} getMediaUrl={getMediaUrl} onAnchorClick={onAnchorClick} />;
 
         default:
             console.warn(`Unknown block type: ${block.type}`);

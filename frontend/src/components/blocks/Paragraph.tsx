@@ -10,7 +10,9 @@ interface ParagraphProps {
 export const Paragraph = ({ block, onAnchorClick }: ParagraphProps) => {
     return (
         <p className={styles.paragraph}>
-            <InlineRenderer nodes={block.content.inlines} onAnchorClick={onAnchorClick} />
+            {block.content && (
+                <InlineRenderer nodes={block.content.inlines} onAnchorClick={onAnchorClick} />
+            )}
         </p>
     );
 };

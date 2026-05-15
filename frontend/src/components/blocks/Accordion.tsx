@@ -18,7 +18,9 @@ export const Accordion = ({ block, getMediaUrl, onAnchorClick }: AccordionProps)
         <div className={`${styles.accordion} ${isOpen ? styles.open : ''}`}>
             <button className={styles.header} onClick={() => setIsOpen(!isOpen)}>
         <span className={styles.label}>
-          <InlineRenderer nodes={block.label.inlines} onAnchorClick={onAnchorClick} />
+          {block.label && (
+              <InlineRenderer nodes={block.label.inlines} onAnchorClick={onAnchorClick} />
+          )}
         </span>
                 <ChevronDown size={16} className={styles.icon} />
             </button>

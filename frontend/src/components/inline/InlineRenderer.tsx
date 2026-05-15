@@ -4,11 +4,16 @@ import { Spoiler } from './Spoiler';
 import styles from './InlineRenderer.module.css';
 
 interface InlineRendererProps {
-    nodes: InlineNode[];
+    nodes?: InlineNode[];  // ← делаем опциональным
     onAnchorClick?: (targetId: string) => void;
 }
 
 export const InlineRenderer = ({ nodes, onAnchorClick }: InlineRendererProps) => {
+    // Защита от undefined/null
+    if (!nodes || !Array.isArray(nodes) || nodes.length === 0) {
+        return null;
+    }
+
     return (
         <>
             {nodes.map((node, idx) => {

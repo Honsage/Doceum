@@ -14,7 +14,7 @@ interface StepperProps {
 export const Stepper = ({ block, getMediaUrl, onAnchorClick }: StepperProps) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const totalSteps = block.children.length;
-    const progress = totalSteps > 1 ? activeIndex / (totalSteps - 1) : 0;
+    const progress = (activeIndex + 1) / totalSteps;
 
     const goNext = () => {
         if (activeIndex < totalSteps - 1) setActiveIndex(activeIndex + 1);
@@ -41,7 +41,9 @@ export const Stepper = ({ block, getMediaUrl, onAnchorClick }: StepperProps) => 
                 <div className={styles.stepInfo}>
                     <span className={styles.stepNumber}>{activeIndex + 1}</span>
                     <span className={styles.stepLabel}>
-            <InlineRenderer nodes={currentStep.label.inlines} onAnchorClick={onAnchorClick} />
+            {currentStep.label && (
+                <InlineRenderer nodes={currentStep.label.inlines} onAnchorClick={onAnchorClick} />
+            )}
           </span>
                 </div>
 

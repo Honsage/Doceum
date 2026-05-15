@@ -22,7 +22,9 @@ export const Tabs = ({ block, getMediaUrl, onAnchorClick }: TabsProps) => {
                         className={`${styles.tabButton} ${idx === activeIndex ? styles.active : ''}`}
                         onClick={() => setActiveIndex(idx)}
                     >
-                        <InlineRenderer nodes={tab.label.inlines} onAnchorClick={onAnchorClick} />
+                        {tab.label && (
+                            <InlineRenderer nodes={tab.label.inlines} onAnchorClick={onAnchorClick} />
+                        )}
                     </button>
                 ))}
             </div>

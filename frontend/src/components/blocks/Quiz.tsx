@@ -53,7 +53,9 @@ export const Quiz = ({ block, getMediaUrl, onAnchorClick }: QuizProps) => {
     return (
         <div className={styles.quiz}>
             <div className={styles.question}>
-                <InlineRenderer nodes={block.question.inlines} onAnchorClick={onAnchorClick} />
+                {block.question && (
+                    <InlineRenderer nodes={block.question.inlines} onAnchorClick={onAnchorClick} />
+                )}
             </div>
 
             <div className={styles.options}>
