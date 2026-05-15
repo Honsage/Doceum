@@ -4,6 +4,9 @@
 /* Подключение шрифтов */
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* Подключение Katex */
+@import 'katex/dist/katex.min.css';
+
 /* Глобальные переменные (светлая тема по умолчанию) */
 :root {
     --font-sans: 'Lora', 'Georgia', serif;
