@@ -1,14 +1,22 @@
 import { Routes, Route } from 'react-router-dom';
+import { MainLayout, AuthLayout } from '@components/layout';
+import { HomePage } from '@pages/home/HomePage';
+import styles from './App.module.css';
 
 function App() {
-  return (
-      <Routes>
-        // Pages with standard layout
-        <Route element={null}>
-          <Route path="/" element={null} />
-        </Route>
-      </Routes>
-  );
+    return (
+        <div className={styles.app}>
+            <Routes>
+                <Route element={<MainLayout />}>
+                    <Route path="/" element={<HomePage />} />
+                </Route>
+
+                <Route element={<AuthLayout />}>
+                    {/* Страницы авторизации */}
+                </Route>
+            </Routes>
+        </div>
+    );
 }
 
 export default App;
