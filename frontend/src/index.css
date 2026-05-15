@@ -1,0 +1,102 @@
+/* Нормализация */
+@import 'normalize.css';
+
+/* Подключение шрифтов */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Глобальные переменные (светлая тема по умолчанию) */
+:root {
+    --font-sans: 'Lora', 'Georgia', serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+    --color-bg-primary: #FAF9F6;
+    --color-bg-secondary: #F0EDE8;
+    --color-text-primary: #2C2A27;
+    --color-text-secondary: #6B6964;
+    --color-border: #E5E2DB;
+    --color-accent: #5E9A8C;
+
+    --color-header-bg: #5E9A8C;
+    --color-header-text: #FAF9F6;
+    --color-header-border: rgba(255, 255, 255, 0.15);
+
+    --color-info-bg: #ECF2F6;
+    --color-info-border: #A3B8C9;
+    --color-tip-bg: #E6F0ED;
+    --color-tip-border: #5E9A8C;
+    --color-warning-bg: #FAF4E8;
+    --color-warning-border: #E8B66C;
+    --color-danger-bg: #FAECEB;
+    --color-danger-border: #FA8F89;
+    --color-note-bg: #FFF8E1;
+
+    --color-quiz-correct: #5E9A8C;
+    --color-quiz-incorrect: #FA8F89;
+
+    --container-max-width: 880px;
+    --container-padding: 2rem;
+}
+
+/* База */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: var(--font-sans);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    line-height: 1.7;
+}
+
+/* Типографика */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.25;
+    margin: 1.5rem 0 0.75rem;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+p {
+    margin-bottom: 1rem;
+}
+
+code, pre {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+}
+
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Контейнер */
+.container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+}
+
+/* Мобильная адаптация */
+@media (max-width: 640px) {
+    :root {
+        --container-padding: 1rem;
+    }
+
+    html {
+        font-size: 14px;
+    }
+}
