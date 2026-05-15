@@ -1,1 +1,3 @@
-export {InlineRenderer} from './InlineRenderer.tsx';
+export { InlineRenderer } from './InlineRenderer';
+export { CopySnippet } from './CopySnippet';
+export { Spoiler } from './Spoiler';

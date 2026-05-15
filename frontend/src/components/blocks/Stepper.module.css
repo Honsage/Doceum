@@ -3,89 +3,77 @@
     border: 1px solid var(--color-border);
     border-radius: 12px;
     overflow: hidden;
+    background: var(--color-bg-primary);
 }
 
-.steps {
+/* Прогресс-бар */
+.progressBar {
+    height: 4px;
+    background: var(--color-bg-secondary);
+}
+
+.progressFill {
+    height: 100%;
+    background: var(--color-accent);
+    transition: width 0.3s ease;
+}
+
+/* Шапка */
+.header {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
     background: var(--color-bg-secondary);
     border-bottom: 1px solid var(--color-border);
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
-.step {
+.stepInfo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1rem 1.5rem;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.step:hover {
-    background: var(--color-bg-primary);
-}
-
-.step.active {
-    border-bottom-color: var(--color-accent);
-    background: var(--color-bg-primary);
-}
-
-.step.completed .stepNumber {
-    background: var(--color-accent);
-    color: white;
+    gap: 0.75rem;
 }
 
 .stepNumber {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
+    background: var(--color-accent);
     border-radius: 50%;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 600;
-    color: var(--color-text-secondary);
+    color: white;
+    flex-shrink: 0;
 }
 
 .stepLabel {
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 500;
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
+    word-break: break-word;
 }
 
-.step.active .stepLabel {
-    color: var(--color-accent);
-}
-
-.content {
-    padding: 1.5rem;
-    background: var(--color-bg-primary);
-}
-
-.navigation {
+.navButtons {
     display: flex;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--color-border);
-    background: var(--color-bg-secondary);
+    gap: 0.5rem;
 }
 
 .navButton {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    font-family: var(--font-sans);
-    font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
+    color: var(--color-text-secondary);
 }
 
 .navButton:hover:not(:disabled) {
@@ -95,6 +83,53 @@
 }
 
 .navButton:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+}
+
+/* Контент */
+.content {
+    padding: 1.5rem;
+    background: var(--color-bg-primary);
+}
+
+.content > *:first-child {
+    margin-top: 0;
+}
+
+.content > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Футер */
+.footer {
+    padding: 0.75rem 1.5rem;
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+}
+
+.stepCounter {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+/* Мобильная адаптация */
+@media (max-width: 640px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .navButtons {
+        align-self: flex-end;
+    }
+
+    .stepLabel {
+        font-size: 0.875rem;
+    }
+
+    .content {
+        padding: 1rem;
+    }
 }

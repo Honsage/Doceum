@@ -14,6 +14,7 @@ interface StepperProps {
 export const Stepper = ({ block, getMediaUrl, onAnchorClick }: StepperProps) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const totalSteps = block.children.length;
+    const progress = totalSteps > 1 ? activeIndex / (totalSteps - 1) : 0;
 
     const goNext = () => {
         if (activeIndex < totalSteps - 1) setActiveIndex(activeIndex + 1);
@@ -23,27 +24,50 @@ export const Stepper = ({ block, getMediaUrl, onAnchorClick }: StepperProps) => 
         if (activeIndex > 0) setActiveIndex(activeIndex - 1);
     };
 
+    const currentStep = block.children[activeIndex] as StepItemBlock;
+
     return (
         <div className={styles.stepper}>
-            <div className={styles.steps}>
-                {block.children.map((step: StepItemBlock, idx: number) => (
-                    <div
-                        key={step.id}
-                        className={`${styles.step} ${idx === activeIndex ? styles.active : ''} ${
-                            idx < activeIndex ? styles.completed : ''
-                        }`}
-                        onClick={() => setActiveIndex(idx)}
-                    >
-                        <span className={styles.stepNumber}>{idx + 1}</span>
-                        <span className={styles.stepLabel}>
-              <InlineRenderer nodes={step.label.inlines} onAnchorClick={onAnchorClick} />
-            </span>
-                    </div>
-                ))}
+            {/* Прогресс-бар */}
+            <div className={styles.progressBar}>
+                <div
+                    className={styles.progressFill}
+                    style={{ width: `${progress * 100}%` }}
+                />
             </div>
 
+            {/* Шапка: номер + название + кнопки */}
+            <div className={styles.header}>
+                <div className={styles.stepInfo}>
+                    <span className={styles.stepNumber}>{activeIndex + 1}</span>
+                    <span className={styles.stepLabel}>
+            <InlineRenderer nodes={currentStep.label.inlines} onAnchorClick={onAnchorClick} />
+          </span>
+                </div>
+
+                <div className={styles.navButtons}>
+                    <button
+                        onClick={goPrev}
+                        disabled={activeIndex === 0}
+                        className={styles.navButton}
+                        aria-label="Предыдущий шаг"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <button
+                        onClick={goNext}
+                        disabled={activeIndex === totalSteps - 1}
+                        className={styles.navButton}
+                        aria-label="Следующий шаг"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Контент шага */}
             <div className={styles.content}>
-                {block.children[activeIndex]?.children.map((child) => (
+                {currentStep.children.map((child) => (
                     <BlockRenderer
                         key={child.id}
                         block={child}
@@ -53,15 +77,11 @@ export const Stepper = ({ block, getMediaUrl, onAnchorClick }: StepperProps) => 
                 ))}
             </div>
 
-            <div className={styles.navigation}>
-                <button onClick={goPrev} disabled={activeIndex === 0} className={styles.navButton}>
-                    <ChevronLeft size={16} />
-                    Назад
-                </button>
-                <button onClick={goNext} disabled={activeIndex === totalSteps - 1} className={styles.navButton}>
-                    Вперёд
-                    <ChevronRight size={16} />
-                </button>
+            {/* Футер: счётчик шагов */}
+            <div className={styles.footer}>
+        <span className={styles.stepCounter}>
+          Шаг {activeIndex + 1} из {totalSteps}
+        </span>
             </div>
         </div>
     );
