@@ -1,0 +1,45 @@
+.callout {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-left: 4px solid;
+    border-radius: 12px;
+}
+
+.icon {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+}
+
+.content {
+    flex: 1;
+}
+
+.content > *:first-child {
+    margin-top: 0;
+}
+
+.content > *:last-child {
+    margin-bottom: 0;
+}
+
+.info {
+    background: var(--color-info-bg);
+    border-left-color: var(--color-info-border);
+}
+
+.tip {
+    background: var(--color-tip-bg);
+    border-left-color: var(--color-tip-border);
+}
+
+.warning {
+    background: var(--color-warning-bg);
+    border-left-color: var(--color-warning-border);
+}
+
+.danger {
+    background: var(--color-danger-bg);
+    border-left-color: var(--color-danger-border);
+}

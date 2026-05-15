@@ -1,0 +1,100 @@
+.stepper {
+    margin: 1.5rem 0;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.steps {
+    display: flex;
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+    overflow-x: auto;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.step:hover {
+    background: var(--color-bg-primary);
+}
+
+.step.active {
+    border-bottom-color: var(--color-accent);
+    background: var(--color-bg-primary);
+}
+
+.step.completed .stepNumber {
+    background: var(--color-accent);
+    color: white;
+}
+
+.stepNumber {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.stepLabel {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+.step.active .stepLabel {
+    color: var(--color-accent);
+}
+
+.content {
+    padding: 1.5rem;
+    background: var(--color-bg-primary);
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+}
+
+.navButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.navButton:hover:not(:disabled) {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.navButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

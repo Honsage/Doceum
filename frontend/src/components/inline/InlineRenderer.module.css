@@ -1,0 +1,22 @@
+.inlineCode {
+    background: var(--color-bg-secondary);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.link {
+    color: var(--color-accent);
+    text-decoration: underline;
+}
+
+.anchorLink {
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+}
