@@ -10,3 +10,7 @@ export { List } from './List';
 export { Callout } from './Callout';
 export { Quote } from './Quote';
 export { Divider } from './Divider';
+export { Video } from './Video';
+export { Quiz } from './Quiz';
+export { Table } from './Table';
+export { Formula } from './Formula';

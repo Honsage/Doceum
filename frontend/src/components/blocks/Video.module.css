@@ -1,0 +1,19 @@
+.videoWrapper {
+    margin: 1.5rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--color-bg-secondary);
+}
+
+.video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Для iframe (YouTube/Vimeo) */
+.video[src*="youtube"],
+.video[src*="vimeo"] {
+    aspect-ratio: 16/9;
+    height: auto;
+}

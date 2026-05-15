@@ -10,10 +10,10 @@ import { List } from './List';
 import { Callout } from './Callout';
 import { Quote } from './Quote';
 import { Divider } from './Divider';
-// import { Video } from './Video';        // TODO
-// import { Quiz } from './Quiz';          // TODO
-// import { Table } from './Table';        // TODO
-// import { Formula } from './Formula';    // TODO
+import { Video } from './Video';
+import { Quiz } from './Quiz';
+import { Table } from './Table';
+import { Formula } from './Formula';
 import styles from './BlockRenderer.module.css';
 
 interface BlockRendererProps {
@@ -39,6 +39,15 @@ export const BlockRenderer = ({ block, getMediaUrl, onAnchorClick }: BlockRender
         case 'video':
             return <Video block={block} getMediaUrl={getMediaUrl} />;
 
+        case 'quiz':
+            return <Quiz block={block} getMediaUrl={getMediaUrl} onAnchorClick={onAnchorClick} />;
+
+        case 'table':
+            return <Table block={block} onAnchorClick={onAnchorClick} />;
+
+        case 'formula':
+            return <Formula block={block} />;
+
         case 'tabs':
             return <Tabs block={block} getMediaUrl={getMediaUrl} onAnchorClick={onAnchorClick} />;
 
@@ -59,18 +68,6 @@ export const BlockRenderer = ({ block, getMediaUrl, onAnchorClick }: BlockRender
 
         case 'divider':
             return <Divider />;
-
-        case 'quiz':
-            // TODO
-            return <div className={styles.placeholder}>[Quiz — будет позже]</div>;
-
-        case 'table':
-            // TODO
-            return <div className={styles.placeholder}>[Table — будет позже]</div>;
-
-        case 'formula':
-            // TODO
-            return <div className={styles.placeholder}>[Formula — будет позже]</div>;
 
         default:
             console.warn(`Unknown block type: ${block.type}`);
