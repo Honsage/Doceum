@@ -1,0 +1,13 @@
+.hero {
+    text-align: center;
+    padding: 4rem 0;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--color-text-primary), var(--color-accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
