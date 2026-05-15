@@ -20,4 +20,4 @@ target/
 pkg/
 
 # Temp and Test data
-storage/
+backend/storage/
