@@ -1,5 +1,5 @@
 import { request } from './client';
-import type { DocumentMetadata, SearchResponse } from '@/types/api';
+import type { DocumentMetadata, SearchResponse } from '@types/api';
 
 export const hubApi = {
     // Последние публикации

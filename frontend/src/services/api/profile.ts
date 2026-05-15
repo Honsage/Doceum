@@ -1,5 +1,5 @@
 import { request } from './client';
-import type { FavoriteItem, DraftItem, PublishedItem, SearchResponse } from '@/types/api';
+import type { FavoriteItem, DraftItem, PublishedItem, SearchResponse } from '@types/api';
 
 export const profileApi = {
     // Избранное

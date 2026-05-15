@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import type { DocumentMetadata } from '@/types/api';
+import type { DocumentMetadata } from '@types/api';
 
 // Временный тип для блоков (позже расширим)
 export interface Block {

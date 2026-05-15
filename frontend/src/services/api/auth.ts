@@ -1,5 +1,5 @@
 import { request } from './client';
-import type { AuthResponse, RegisterRequest, LoginRequest } from '@/types/api';
+import type { AuthResponse, RegisterRequest, LoginRequest } from '@types/api';
 
 export const authApi = {
     register: (data: RegisterRequest): Promise<AuthResponse> =>

@@ -1,2 +1,2 @@
 export { doceumParser } from './DoceumParserService';
-export type { IDoceumParser, ParseResult, SerializeInput } from '@/types/parser';
+export type { IDoceumParser, ParseResult, SerializeInput } from '@types/parser';

@@ -1,5 +1,5 @@
 import { request, API_BASE } from './client';
-import type { CreateDocumentRequest, CreateDocumentResponse, DocumentMetadata, VerifyResponse } from '@/types/api';
+import type { CreateDocumentRequest, CreateDocumentResponse, DocumentMetadata, VerifyResponse } from '@types/api';
 
 export const documentsApi = {
     // Создать документ

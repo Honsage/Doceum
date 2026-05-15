@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import type { IDoceumParser, ParseResult, SerializeInput } from '@/types/parser';
+import type { IDoceumParser, ParseResult, SerializeInput } from '@types/parser';
 
 class DoceumParserService implements IDoceumParser {
 

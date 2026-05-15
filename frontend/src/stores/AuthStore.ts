@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { authApi } from '@/services/api/auth';
-import { storageService } from '@/services/storage/localStorageService';
-import type { User, LoginRequest, RegisterRequest } from '@/types/api';
+import { authApi } from '@services/api/auth';
+import { storageService } from '@services/storage/localStorageService';
+import type { User, LoginRequest, RegisterRequest } from '@types/api';
 
 class AuthStore {
     user: User | null = null;

@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { storageService } from '@/services/storage/localStorageService';
+import { storageService } from '@services/storage/localStorageService';
 
 type Theme = 'light' | 'dark';
 

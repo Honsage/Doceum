@@ -3,7 +3,7 @@ const REFRESH_KEY = 'refreshToken';
 const USER_KEY = 'user';
 const THEME_KEY = 'theme';
 
-import type { User } from '@/types/api';
+import type { User } from '@types/api';
 
 export const storageService = {
     // Access token
