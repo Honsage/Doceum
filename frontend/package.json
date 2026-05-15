@@ -12,6 +12,8 @@
   "dependencies": {
     "@types/react-router-dom": "^5.3.3",
     "doceum-wasm": "file:../wasm/pkg",
+    "mobx": "^6.15.3",
+    "mobx-react-lite": "^4.1.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.15.0"
