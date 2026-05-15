@@ -1,0 +1,31 @@
+.page {
+    padding: 2rem 0;
+}
+
+.container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+}
+
+.header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+.signed {
+    color: var(--color-accent);
+}
