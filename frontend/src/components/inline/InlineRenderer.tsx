@@ -1,4 +1,6 @@
-import type { InlineNode} from '@types/document';
+import type { InlineNode } from '@types/document';
+import { CopySnippet } from './CopySnippet';
+import { Spoiler } from './Spoiler';
 import styles from './InlineRenderer.module.css';
 
 interface InlineRendererProps {
@@ -24,10 +26,13 @@ export const InlineRenderer = ({ nodes, onAnchorClick }: InlineRendererProps) =>
                     case 'inline_code':
                         return <code key={idx} className={styles.inlineCode}>{node.code}</code>;
 
+                    case 'copy_snippet':
+                        return <CopySnippet key={idx} text={node.text} />;
+
                     case 'link':
                         return (
                             <a key={idx} href={node.href} target="_blank" rel="noopener noreferrer" className={styles.link}>
-                                <InlineRenderer nodes={node.content || []} onAnchorClick={onAnchorClick} />
+                                <InlineRenderer nodes={node.content} onAnchorClick={onAnchorClick} />
                             </a>
                         );
 
@@ -35,11 +40,20 @@ export const InlineRenderer = ({ nodes, onAnchorClick }: InlineRendererProps) =>
                         return (
                             <button
                                 key={idx}
-                                onClick={() => onAnchorClick?.(node.targetId || '')}
+                                onClick={() => onAnchorClick?.(node.targetId)}
                                 className={styles.anchorLink}
                             >
-                                <InlineRenderer nodes={node.content || []} onAnchorClick={onAnchorClick} />
+                                <InlineRenderer nodes={node.content} onAnchorClick={onAnchorClick} />
                             </button>
+                        );
+
+                    case 'spoiler':
+                        return (
+                            <Spoiler
+                                key={idx}
+                                content={node.content}
+                                onAnchorClick={onAnchorClick}
+                            />
                         );
 
                     default:
