@@ -25,5 +25,14 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "paths": {
+    "@components/*": ["./src/components/*"],
+    "@pages/*": ["./src/pages/*"],
+    "@stores/*": ["./src/stores/*"],
+    "@services/*": ["./src/services/*"],
+    "@types/*": ["./src/types/*"],
+    "@assets/*": ["./src/assets/*"],
+    "@utils/*": ["./src/utils/*"]
+  }
 }
