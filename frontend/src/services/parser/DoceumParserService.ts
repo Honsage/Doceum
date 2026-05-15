@@ -1,5 +1,30 @@
 import JSZip from 'jszip';
-import type { IDoceumParser, ParseResult, SerializeInput } from '@types/parser';
+import type { IDoceumParser, ParseResult, SerializeInput } from '@/types/parser';
+
+// Нормализация ключей: snake_case -> camelCase
+const toCamelCase = (str: string): string => {
+    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+};
+
+const normalizeKeys = (obj: any): any => {
+    if (obj === null || typeof obj !== 'object') return obj;
+
+    if (Array.isArray(obj)) {
+        return obj.map(item => normalizeKeys(item));
+    }
+
+    const result: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        // Пропускаем нормализацию для поля type
+        if (key === 'type') {
+            result[key] = value;
+        } else {
+            const camelKey = toCamelCase(key);
+            result[camelKey] = normalizeKeys(value);
+        }
+    }
+    return result;
+};
 
 class DoceumParserService implements IDoceumParser {
 
@@ -7,23 +32,22 @@ class DoceumParserService implements IDoceumParser {
         try {
             const zip = await JSZip.loadAsync(bytes);
 
-            // Проверяем manifest.json
             const manifestFile = zip.file('manifest.json');
             if (!manifestFile) {
                 return { ok: false, errors: ['Missing manifest.json'] };
             }
             const manifestText = await manifestFile.async('string');
-            const manifest = JSON.parse(manifestText);
+            const manifestRaw = JSON.parse(manifestText);
+            const manifest = normalizeKeys(manifestRaw);
 
-            // Проверяем content.json
             const contentFile = zip.file('content.json');
             if (!contentFile) {
                 return { ok: false, errors: ['Missing content.json'] };
             }
             const contentText = await contentFile.async('string');
-            const content = JSON.parse(contentText);
+            const contentRaw = JSON.parse(contentText);
+            const content = normalizeKeys(contentRaw);
 
-            // Проверяем структуру
             if (!content.root || !Array.isArray(content.root)) {
                 return { ok: false, errors: ['Invalid content.json: missing root array'] };
             }
@@ -33,10 +57,10 @@ class DoceumParserService implements IDoceumParser {
                 manifest: {
                     id: manifest.meta?.id,
                     title: manifest.meta?.title,
-                    authorId: manifest.meta?.author_id,
-                    createdAt: manifest.meta?.created_at,
-                    updatedAt: manifest.meta?.updated_at,
-                    contentSha256: manifest.content_sha256 || '',
+                    authorId: manifest.meta?.authorId,
+                    createdAt: manifest.meta?.createdAt,
+                    updatedAt: manifest.meta?.updatedAt,
+                    contentSha256: manifest.contentSha256 || '',
                     hasSignature: !!manifest.signature,
                 },
                 content: {
@@ -61,7 +85,6 @@ class DoceumParserService implements IDoceumParser {
     }
 
     async serialize(_input: SerializeInput): Promise<Uint8Array> {
-        // TODO: реализовать для Studio
         console.warn('DoceumParserService.serialize: not implemented yet');
         return new Uint8Array(0);
     }

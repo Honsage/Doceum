@@ -52,12 +52,19 @@ export const Quiz = ({ block, getMediaUrl, onAnchorClick }: QuizProps) => {
 
     return (
         <div className={styles.quiz}>
+            {/* Вопрос: рендерим children как блоки */}
             <div className={styles.question}>
-                {block.question && (
-                    <InlineRenderer nodes={block.question.inlines} onAnchorClick={onAnchorClick} />
-                )}
+                {block.question.children.map((child) => (
+                    <BlockRenderer
+                        key={child.id}
+                        block={child}
+                        getMediaUrl={getMediaUrl}
+                        onAnchorClick={onAnchorClick}
+                    />
+                ))}
             </div>
 
+            {/* Варианты ответов */}
             <div className={styles.options}>
                 {block.inputType === 'radio' && block.options?.map(option => (
                     <label key={option.id} className={styles.option}>
@@ -70,12 +77,12 @@ export const Quiz = ({ block, getMediaUrl, onAnchorClick }: QuizProps) => {
                             disabled={submitted}
                         />
                         <span className={styles.optionContent}>
-              {option.content.map((item, idx) => {
-                  if (item.type === 'text') {
-                      return <InlineRenderer key={idx} nodes={item.inlines} />;
+              {option.children.map((child, idx) => {
+                  if (child.type === 'text') {
+                      return <InlineRenderer key={idx} nodes={child.inlines} />;
                   }
-                  if (item.type === 'image') {
-                      return <BlockRenderer key={idx} block={item} getMediaUrl={getMediaUrl} />;
+                  if (child.type === 'image') {
+                      return <BlockRenderer key={idx} block={child} getMediaUrl={getMediaUrl} />;
                   }
                   return null;
               })}
@@ -93,12 +100,12 @@ export const Quiz = ({ block, getMediaUrl, onAnchorClick }: QuizProps) => {
                             disabled={submitted}
                         />
                         <span className={styles.optionContent}>
-              {option.content.map((item, idx) => {
-                  if (item.type === 'text') {
-                      return <InlineRenderer key={idx} nodes={item.inlines} />;
+              {option.children.map((child, idx) => {
+                  if (child.type === 'text') {
+                      return <InlineRenderer key={idx} nodes={child.inlines} />;
                   }
-                  if (item.type === 'image') {
-                      return <BlockRenderer key={idx} block={item} getMediaUrl={getMediaUrl} />;
+                  if (child.type === 'image') {
+                      return <BlockRenderer key={idx} block={child} getMediaUrl={getMediaUrl} />;
                   }
                   return null;
               })}
@@ -133,7 +140,7 @@ export const Quiz = ({ block, getMediaUrl, onAnchorClick }: QuizProps) => {
                         ) : (
                             <>
                                 <X size={18} />
-                                <span>Неверный ответ</span>
+                                <span>Неверно</span>
                             </>
                         )}
                     </div>
