@@ -14,15 +14,37 @@ class AuthStore {
         this.init();
     }
 
-    private init(): void {
+    private async init(): Promise<void> {
         const user = storageService.getUser();
         const token = storageService.getAccessToken();
+        const refreshToken = storageService.getRefreshToken();
 
-        if (user && token) {
-            this.user = user;
+        if (user && token && refreshToken) {
+            // Проверяем, не истёк ли токен (простая проверка на клиенте)
+            const isTokenValid = this.isTokenValid(token);
+
+            if (isTokenValid) {
+                this.user = user;
+            } else {
+                // Токен истёк — пробуем обновить
+                const refreshed = await this.refreshToken();
+                if (!refreshed) {
+                    storageService.clearAll();
+                }
+            }
         }
 
         this.isInitialized = true;
+    }
+
+    private isTokenValid(token: string): boolean {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const exp = payload.exp * 1000; // в миллисекундах
+            return exp > Date.now();
+        } catch {
+            return false;
+        }
     }
 
     setUser(user: User | null): void {
@@ -52,7 +74,7 @@ class AuthStore {
             runInAction(() => {
                 storageService.setAccessToken(response.accessToken);
                 storageService.setRefreshToken(response.refreshToken);
-                this.user = response.user;
+                this.setUser(response.user);
                 this.isLoading = false;
             });
 

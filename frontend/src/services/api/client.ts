@@ -1,3 +1,5 @@
+import { authStore } from '@stores/AuthStore';
+
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 interface RequestOptions extends RequestInit {
@@ -17,23 +19,55 @@ class ApiError extends Error {
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     const { requireAuth = false, ...fetchOptions } = options;
 
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-        ...fetchOptions.headers,
+    const getHeaders = (token?: string): HeadersInit => {
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            ...fetchOptions.headers,
+        };
+
+        if (requireAuth && token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        return headers;
     };
 
-    if (requireAuth) {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-            throw new ApiError(401, 'No access token');
-        }
-        headers['Authorization'] = `Bearer ${token}`;
+    const makeRequest = async (token?: string): Promise<Response> => {
+        return fetch(`${API_BASE}${endpoint}`, {
+            ...fetchOptions,
+            headers: getHeaders(token),
+        });
+    };
+
+    // Первый запрос
+    let token = requireAuth ? localStorage.getItem('accessToken') : undefined;
+
+    if (requireAuth && !token) {
+        throw new ApiError(401, 'No access token');
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-        ...fetchOptions,
-        headers,
-    });
+    let response = await makeRequest(token);
+
+    // Если 401 и есть refresh токен — пробуем обновить
+    if (response.status === 401 && requireAuth) {
+        const refreshToken = localStorage.getItem('refreshToken');
+
+        if (refreshToken) {
+            const refreshed = await authStore.refreshToken();
+
+            if (refreshed) {
+                // Получаем новый токен
+                const newToken = localStorage.getItem('accessToken');
+                response = await makeRequest(newToken || undefined);
+            }
+        }
+
+        // Если refresh не удался или нет refresh токена
+        if (response.status === 401) {
+            await authStore.logout();
+            throw new ApiError(401, 'Session expired. Please login again.');
+        }
+    }
 
     if (!response.ok) {
         const errorText = await response.text();
