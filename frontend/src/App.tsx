@@ -7,6 +7,7 @@ import { LocalPreviewPage } from '@pages/viewer/LocalPreviewPage';
 import { LoginPage } from '@pages/auth/LoginPage';
 import { RegisterPage } from '@pages/auth/RegisterPage';
 import { ProfilePage } from '@pages/profile/ProfilePage';
+import { LibraryPage } from '@pages/library/LibraryPage';
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
 
                 // Для любых аутентифицированных пользователей
                 <Route element={<ProtectedRoute />}>
+                    <Route path="/library" element={<LibraryPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                 </Route>
 
