@@ -3,6 +3,8 @@ import { MainLayout, AuthLayout } from '@components/layout';
 import { HomePage } from '@pages/home/HomePage';
 import { LocalViewerPage } from '@pages/viewer/LocalViewerPage';
 import { LocalPreviewPage } from '@pages/viewer/LocalPreviewPage';
+import { LoginPage } from '@pages/auth/LoginPage';
+import { RegisterPage } from '@pages/auth/RegisterPage';
 
 function App() {
     return (
@@ -14,7 +16,8 @@ function App() {
             </Route>
 
             <Route element={<AuthLayout />}>
-                {/* Страницы авторизации будут здесь */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
             </Route>
         </Routes>
     );
