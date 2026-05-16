@@ -1,0 +1,2646 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Doceo – Формат интерактивных документов</title>
+    <!-- Normalize + шрифты + katex (опционально) -->
+    <style>
+        /* ---------- Нормализация (inline-critical) ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ---------- Шрифты ---------- */
+        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        /* Глобальные переменные (светлая академическая тема) */
+        :root {
+            --font-sans: 'Lora', 'Georgia', serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+            --color-bg-primary: #FAF9F6;
+            --color-bg-secondary: #F0EDE8;
+            --color-text-primary: #2C2A27;
+            --color-text-secondary: #6B6964;
+            --color-border: #E5E2DB;
+            --color-accent: #5E9A8C;
+
+            --color-header-bg: #5E9A8C;
+            --color-header-text: #FAF9F6;
+            --color-header-border: rgba(255, 255, 255, 0.15);
+
+            --color-info-bg: #ECF2F6;
+            --color-info-border: #A3B8C9;
+            --color-tip-bg: #E6F0ED;
+            --color-tip-border: #5E9A8C;
+            --color-warning-bg: #FAF4E8;
+            --color-warning-border: #E8B66C;
+            --color-danger-bg: #FAECEB;
+            --color-danger-border: #FA8F89;
+
+            --container-max-width: 880px;
+            --container-padding: 2rem;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-primary);
+            line-height: 1.7;
+            font-weight: 400;
+        }
+
+        /* типографика */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.25;
+            margin: 1.8rem 0 0.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        h1 { font-size: 2.2rem; margin-top: 0; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem; }
+        h2 { font-size: 1.8rem; }
+        h3 { font-size: 1.5rem; }
+        h4 { font-size: 1.25rem; }
+        h5, h6 { font-size: 1rem; }
+
+        p {
+            margin-bottom: 1.2rem;
+        }
+
+        a {
+            color: var(--color-accent);
+            text-decoration: none;
+            transition: color 0.1s ease;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #3f6b5f;
+        }
+
+        /* Код и преформатирование */
+        code, pre {
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            background: #F1EFEA;
+            border-radius: 6px;
+        }
+
+        code {
+            padding: 0.2rem 0.4rem;
+            white-space: nowrap;
+        }
+
+        pre {
+            padding: 1rem;
+            overflow-x: auto;
+            line-height: 1.45;
+            margin: 1.5rem 0;
+            border: 1px solid var(--color-border);
+            background: #F5F3EF;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            white-space: pre;
+        }
+
+        /* таблицы */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+            background: white;
+            border: 1px solid var(--color-border);
+        }
+
+        th, td {
+            border: 1px solid var(--color-border);
+            padding: 0.6rem 1rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: var(--color-bg-secondary);
+            font-weight: 600;
+        }
+
+        /* списки */
+        ul, ol {
+            margin: 0.8rem 0 1rem 1.8rem;
+        }
+
+        li {
+            margin: 0.3rem 0;
+        }
+
+        /* блоки цитат */
+        blockquote {
+            margin: 1.2rem 0;
+            padding: 0.5rem 1rem;
+            border-left: 4px solid var(--color-accent);
+            background: var(--color-bg-secondary);
+            color: #3e3a35;
+            font-style: normal;
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: var(--color-border);
+            margin: 2rem 0;
+        }
+
+        /* контейнер документа */
+        .document-container {
+            max-width: var(--container-max-width);
+            margin: 0 auto;
+            padding: 2rem var(--container-padding) 4rem;
+            background: var(--color-bg-primary);
+        }
+
+        /* шапка с переключателем языков — строгая */
+        .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .title-block h1 {
+            margin-bottom: 0.2rem;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .version-meta {
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+            margin-top: 0.25rem;
+            font-family: var(--font-mono);
+        }
+
+        .lang-switch {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--color-bg-secondary);
+            padding: 4px;
+            border-radius: 40px;
+        }
+
+        .lang-btn {
+            font-family: var(--font-sans);
+            background: transparent;
+            border: none;
+            padding: 0.3rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 32px;
+            cursor: pointer;
+            transition: 0.1s linear;
+            color: var(--color-text-secondary);
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: var(--color-accent);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            font-weight: 600;
+        }
+
+        /* md-content — основной стиль */
+        .md-content {
+            margin-top: 0.5rem;
+        }
+
+        /* оглавление если нужно */
+        .toc-stub {
+            font-size: 0.9rem;
+            background: var(--color-bg-secondary);
+            padding: 0.75rem 1.2rem;
+            border-radius: 12px;
+            margin: 1rem 0 1.8rem;
+            border-left: 3px solid var(--color-accent);
+        }
+
+        /* футер */
+        .footer-note {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--color-border);
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            :root {
+                --container-padding: 1.25rem;
+            }
+            html {
+                font-size: 14px;
+            }
+            .doc-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Блоки кода — контейнер с относительным позиционированием */
+pre {
+    position: relative;
+    background: #F1EFEA;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+}
+
+pre code {
+    background: transparent;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #2C2A27;
+    white-space: pre;
+}
+
+.code-lang {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    background: #E5E2DB;
+    color: #5E6B6B;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #E5E2DB;
+    border: none;
+    color: #5E6B6B;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.copy-btn:hover {
+    background: #D4CFC5;
+    color: #2C2A27;
+}
+
+/* Подсветка синтаксиса — светлая тема */
+.hljs {
+    background: transparent !important;
+    color: #2C2A27;
+}
+    </style>
+    <!-- Marked.js для рендеринга MD -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+</head>
+<body>
+<div class="document-container">
+    <div class="doc-header">
+        <div class="title-block">
+            <h1 id="main-title">Doceo Format Specification</h1>
+            <div class="version-meta">Version 1.0-draft · 2026-05-06</div>
+        </div>
+        <div class="lang-switch">
+            <button class="lang-btn" data-lang="en">English</button>
+            <button class="lang-btn" data-lang="ru">Русский</button>
+        </div>
+    </div>
+    <div id="markdown-view" class="md-content">
+        <!-- сюда рендерится markdown -->
+    </div>
+    <div class="footer-note" id="footer-note">
+        &copy; Doceum, 2026. All rights reserved
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    //  ПОЛНЫЕ ТЕКСТЫ СПЕЦИФИКАЦИИ (русский / английский)
+    //  СЮДА ВЫ МОЖЕТЕ ВСТАВИТЬ ЛЮБОЙ ВАШ MD КОНТЕНТ.
+    //  Структура: переменные ruSpec и enSpec.
+    // --------------------------------------------------------------
+    
+    const ruSpec = `
+
+## Содержание
+
+1. [Введение](#1-введение)
+2. [Термины и определения](#2-термины-и-определения)
+3. [Соглашения](#3-соглашения)
+4. [Структура файла](#4-структура-файла)
+5. [Спецификация манифеста](#5-спецификация-манифеста)
+6. [Спецификация содержимого](#6-спецификация-содержимого)
+   - 6.1 [Корень документа](#61-корень-документа)
+   - 6.2 [Классификация узлов](#62-классификация-узлов)
+   - 6.3 [Семантические контейнеры](#63-семантические-контейнеры)
+   - 6.4 [Семантические структуры](#64-семантические-структуры)
+   - 6.5 [Носители контента](#65-носители-контента)
+7. [Модель встроенных узлов](#7-модель-встроенных-узлов)
+8. [Правила валидации](#8-правила-валидации)
+9. [Версионирование и совместимость](#9-версионирование-и-совместимость)
+10. [Приложение А – Полный справочник узлов](#10-приложение-а--полный-справочник-узлов)
+11. [Приложение Б – Полный пример документа](#11-приложение-б--полный-пример-документа)
+
+---
+
+## 1. Введение
+
+### 1.1 Назначение
+
+Настоящий документ определяет формат файлов DOCEO (\`.doceo\`) – формат-контейнер для интерактивных образовательных документов. Формат предназначен для создания, распространения и отображения структурированных документов, включающих интерактивные компоненты: вкладки, пошаговые алгоритмы, тесты, галереи и другие элементы.
+
+### 1.2 Область применения
+
+Настоящая спецификация охватывает:
+
+- физическую структуру файла \`.doceo\`;
+- схему файла \`manifest.json\`;
+- схему файла \`content.json\`;
+- модель встроенного содержимого;
+- инварианты валидации;
+- политику версионирования.
+
+Настоящая спецификация не регламентирует поведение при отображении, реализацию редактора и серверную обработку.
+
+### 1.3 Целевая аудитория
+
+Настоящая спецификация предназначена для разработчиков, реализующих совместимые с Doceo ридеры (readers), редакторы (writers), валидаторы и инструменты преобразования.
+
+### 1.4 Концепция документа
+
+Документ \`.doceo\` является **автономным (self-contained) артефактом контента без состояния (stateless)**. По определению для него выполняются следующие свойства.
+
+**Отсутствие состояния (Statelessness).** Документ не содержит состояния ридера. Он не фиксирует, какая вкладка была выбрана последней, какой аккордеон был открыт, на каком шаге степпера остановился пользователь и какие пункты контрольного списка были отмечены. Всё подобное состояние является временным (ephemeral) и управляется исключительно ридером в течение одного сеанса чтения.
+
+**Однозначно определённое отображение (Deterministic rendering).** При одном и том же файле \`.doceo\` и совместимом ридере начальное отображение MUST быть идентичным при любом количестве чтений, на любых платформах, в любой момент времени. Документ является чистой функцией своего содержимого.
+
+**Автономность (Self-containment).** Всё содержимое, необходимое для отображения документа, либо встроено в архив, либо указано через явную ссылку URL. Ридер MUST NOT зависеть от какого-либо внешнего состояния, сеанса или сервиса для формирования начального отображения документа.
+
+Совокупность данных свойств гарантирует полную переносимость файла \`.doceo\` и возможность верификации его отображения по содержимому в любой момент времени.
+
+---
+
+## 2. Термины и определения
+
+**Документ (Document)** – единственный файл \`.doceo\`, представляющий законченную единицу контента.
+
+**Архив (Archive)** – ZIP-контейнер, физически хранящий файл \`.doceo\`.
+
+**Манифест (Manifest)** – файл \`manifest.json\`, расположенный в корне архива. Описывает метаданные документа, реестр ресурсов и подпись целостности.
+
+**Содержимое (Content)** – файл \`content.json\`, расположенный в корне архива. Описывает дерево узлов документа.
+
+**Ресурс (Asset)** – любой медиафайл (изображение, видео, растровый рисунок холста), хранящийся в архиве и используемый узлами содержимого.
+
+**Узел (Node)** – единичный элемент дерева узлов документа. Каждый узел имеет уникальный идентификатор \`id\` и поле-дискриминатор \`type\`.
+
+**Семантический контейнер (Semantic Container)** – узел, организующий произвольную последовательность дочерних узлов посредством конкретного поведения при отображении или семантической роли. Состав дочерних узлов не ограничен схемой.
+
+**Семантическая структура (Semantic Structure)** – узел с фиксированным именованным контрактом типизированных полей. Состав дочерних узлов определяется схемой, а не обобщённым массивом \`children\`.
+
+**Носитель контента (Content Carrier)** – терминальный узел, несущий конкретный тип представления информации: форматированный текст, растровое изображение, видео, код, формулу, холст или диаграмму. Носители контента не имеют дочерних блочных узлов.
+
+**Текст (Text)** – носитель контента, содержащий последовательность встроенных узлов. \`text\` никогда не является самостоятельным блочным узлом дерева документа; он присутствует исключительно как значение именованного поля семантических структур.
+
+**Встроенный узел (Inline Node)** – элемент, существующий внутри носителя контента \`text\`. Встроенные узлы образуют модель форматированного текста (rich text).
+
+**Дискриминантное объединение (Discriminated Union)** – объект JSON, тип которого однозначно определяется значением поля \`type\`.
+
+**NodeId** – 8-символьный буквенно-цифровой идентификатор, сгенерированный алгоритмом nanoid, уникальный в рамках одного документа.
+
+**Легальное изменение (Legal Modification)** – любое изменение документа, выполненное через совместимый редактор (conforming writer) от имени автора документа. Прямое изменение содержимого архива за пределами совместимого редактора является нелегальным изменением. Поле \`updated_at\` MUST обновляться исключительно при легальных изменениях.
+
+**Обратная совместимость (Backward Compatibility)** – гарантия того, что ридер, реализующий версию N настоящей спецификации, корректно обрабатывает документы, созданные в соответствии с любой версией M, где M ≤ N, при условии игнорирования неизвестных полей и неизвестных типов узлов.
+
+---
+
+## 3. Соглашения
+
+### 3.1 Нотация
+
+Определения типов в настоящей спецификации используют TypeScript-подобную нотацию для обеспечения ясности. Данная нотация является декларативной и не подразумевает какого-либо конкретного языка реализации.
+
+\`\`\`
+type NodeId = string        // 8-символьный nanoid
+type HexColor = string      // например, "#ff0000"
+
+interface ExampleNode {
+  id:       NodeId          // обязательное поле
+  type:     "example"       // обязательное поле, литеральный дискриминатор
+  label?:   Text            // необязательное поле (помечено символом ?)
+  level:    1 | 2 | 3       // объединение литералов
+}
+\`\`\`
+
+### 3.2 Обязательность полей
+
+| Маркер | Значение |
+|--------|---------|
+| Без маркера | Поле является обязательным. Его отсутствие делает документ невалидным. |
+| Суффикс \`?\` | Поле является необязательным. Его отсутствие допустимо. |
+
+### 3.3 Ключевые слова
+
+Ключевые слова «MUST», «MUST NOT», «REQUIRED», «SHALL», «SHALL NOT», «SHOULD», «SHOULD NOT», «RECOMMENDED», «MAY» и «OPTIONAL» в настоящем документе интерпретируются в соответствии с [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+
+### 3.4 Неизвестные поля
+
+Совместимый ридер MUST игнорировать неизвестные поля любого узла. Данное требование необходимо для обеспечения прямой совместимости (forward compatibility) с будущими версиями настоящей спецификации.
+
+### 3.5 Неизвестные типы узлов
+
+Совместимый ридер, обнаруживший узел с неизвестным значением поля \`type\`, MUST NOT завершать работу с ошибкой. Вместо неизвестного узла ридер SHOULD отображать нейтральную заглушку.
+
+---
+
+## 4. Структура файла
+
+### 4.1 Формат контейнера
+
+Файл \`.doceo\` представляет собой ZIP-архив в соответствии со спецификацией формата ZIP ([PKWARE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)). Архив MUST использовать расширение файла \`.doceo\`.
+
+Архив MUST содержать следующие файлы в своём корне:
+
+\`\`\`
+document.doceo
+├── manifest.json
+└── content.json
+\`\`\`
+
+Архив MAY содержать директорию \`media/\`:
+
+\`\`\`
+document.doceo
+├── manifest.json
+├── content.json
+└── media/
+    ├── <имя_файла_ресурса>
+    └── ...
+\`\`\`
+
+### 4.2 Ограничения
+
+- Файл \`manifest.json\` MUST присутствовать в архиве.
+- Файл \`content.json\` MUST присутствовать в архиве.
+- Все файлы ресурсов, указанные в поле \`assets\` файла \`manifest.json\`, MUST присутствовать в архиве по пути, заданному в поле \`path\` соответствующей записи.
+- Ни один файл ресурса не может присутствовать в архиве без соответствующей записи в массиве \`assets\` файла \`manifest.json\`.
+
+### 4.3 Медиафайлы
+
+Поддерживаемые типы медиафайлов:
+
+| Категория | Форматы |
+|----------|---------|
+| Растровое изображение | \`.webp\`, \`.png\`, \`.jpg\`, \`.jpeg\`, \`.gif\` |
+| Видео | \`.mp4\` |
+| Растровый рисунок холста | \`.png\` |
+
+---
+
+## 5. Спецификация манифеста
+
+### 5.1 Схема
+
+Файл \`manifest.json\` MUST быть реализацией следующего интерфейса \`Manifest\`.
+
+\`\`\`typescript
+interface Manifest {
+  version:          string       // версия формата, например "1.0"
+  meta:             DocumentMeta
+  content_filename: string       // всегда "content.json" в версии 1.0
+  assets:           Asset[]
+  content_sha256:   string       // SHA-256 файла content.json в шестнадцатеричной кодировке
+  signature?:       string       // подпись HMAC-SHA256 (см. раздел 5.5)
+}
+
+interface DocumentMeta {
+  id:         string             // UUIDv7
+  title:      string
+  author_id:  string             // UUIDv7 пользователя платформы
+  created_at: string             // ISO 8601, UTC
+  updated_at: string             // ISO 8601, UTC
+}
+
+interface Asset {
+  path:   string                 // относительный путь в архиве, например "media/img_a3f1.webp"
+  sha256: string                 // SHA-256 содержимого файла в шестнадцатеричной кодировке
+}
+\`\`\`
+
+### 5.2 Описание полей
+
+**\`version\`** – версия спецификации формата Doceo, которой соответствует данный документ. Ридер MUST проверять данное поле до начала обработки документа. Если версия превышает поддерживаемую ридером, ридер SHOULD предупреждать пользователя.
+
+**\`meta.id\`** – идентификатор UUIDv7, присваиваемый документу в момент его создания. Идентификатор сохраняется при редактировании и повторных публикациях. После первоначального присвоения он MUST NOT изменяться.
+
+**\`meta.author_id\`** – идентификатор UUIDv7 пользователя платформы, создавшего документ. Преобразование данного идентификатора в удобочитаемое имя выходит за рамки настоящей спецификации.
+
+**\`meta.created_at\`** и **\`meta.updated_at\`** – строки даты и времени в формате ISO 8601 в часовом поясе UTC. Поле \`updated_at\` MUST обновляться при каждом легальном изменении (Legal Modification) документа (см. раздел 2).
+
+**\`content_filename\`** – имя файла содержимого в архиве. В версии 1.0 данное значение MUST равняться \`"content.json"\`. Поле предусмотрено в целях обеспечения прямой совместимости.
+
+**\`assets\`** – реестр всех медиафайлов, присутствующих в архиве. Каждая запись содержит относительный путь к файлу и его контрольную сумму SHA-256. Ридер MAY использовать данный реестр для проверки целостности ресурсов до начала отображения.
+
+**\`content_sha256\`** – контрольная сумма SHA-256 файла \`content.json\`. Данное поле включается в полезную нагрузку подписи (см. раздел 5.5).
+
+### 5.3 Пример
+
+\`\`\`json
+{
+  "version": "1.0",
+  "meta": {
+    "id": "01952f3a-7b4c-7d3e-9f1a-2c4b6d8e0a2f",
+    "title": "Введение в виртуальные окружения Python",
+    "author_id": "01945c2b-1a3d-7e4f-8b2c-3d5a7f9e1c0b",
+    "created_at": "2026-05-06T10:30:00Z",
+    "updated_at": "2026-05-06T14:15:00Z"
+  },
+  "content_filename": "content.json",
+  "assets": [
+    {
+      "path": "media/img_a3f1.webp",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb924..."
+    }
+  ],
+  "content_sha256": "9f86d081884c7d659a2feaa0c55ad015...",
+  "signature": "HS256:5d41402abc4b2a76b9719d911017c592..."
+}
+\`\`\`
+
+### 5.4 Отсутствие подписи
+
+Поле \`signature\` является OPTIONAL. Документ без подписи является валидным и допускает обработку. Отсутствие подписи означает, что документ не был опубликован через сервер платформы Doceo и не прошёл верификацию.
+
+Ридер SHOULD различать три состояния и информировать о них пользователя:
+
+| Состояние | Условие |
+|-----------|---------|
+| Без подписи (Unsigned) | Поле \`signature\` отсутствует |
+| Подтверждён (Verified) | Подпись присутствует и действительна |
+| Изменён (Tampered) | Подпись присутствует, но недействительна |
+
+### 5.5 Алгоритм подписи
+
+Подпись представляет собой значение HMAC-SHA256, вычисляемое сервером платформы Doceo с использованием секретного ключа, хранящегося на сервере.
+
+Полезная нагрузка (payload) подписи является конкатенацией следующих элементов:
+1. Каноническая JSON-сериализация объекта \`manifest.json\` с исключённым полем \`signature\`.
+2. Значение поля \`content_sha256\`.
+3. Контрольные суммы SHA-256 каждого файла ресурса в порядке их следования в массиве \`assets\`.
+
+Значение поля \`signature\` имеет префикс с идентификатором алгоритма: \`HS256:<hmac-в-шестнадцатеричной-кодировке>\`.
+
+---
+
+## 6. Спецификация содержимого
+
+### 6.1 Корень документа
+
+Файл \`content.json\` MUST быть реализацией следующего интерфейса \`ContentDocument\`.
+
+\`\`\`typescript
+interface ContentDocument {
+  root: BlockNode[]
+}
+\`\`\`
+
+**\`root\`** – последовательность блочных узлов верхнего уровня. Данный массив MUST содержать только семантические контейнеры и семантические структуры. Носители контента MUST NOT присутствовать непосредственно в \`root\`.
+
+Авторитетная версия формата объявляется в файле \`manifest.json\` в поле \`version\`. Файл \`content.json\` не содержит поля версии.
+
+### 6.2 Классификация узлов
+
+Все блочные узлы относятся к одной из трёх категорий.
+
+**Семантический контейнер (Semantic Container)** – узел, содержащий произвольную последовательность дочерних блочных узлов в массиве \`children\`. Характер дочерних узлов определяется поведением при отображении, а не фиксированной схемой. Семантические контейнеры допустимы в \`root\` и в любом массиве \`children\`.
+
+**Семантическая структура (Semantic Structure)** – узел с фиксированным именованным контрактом типизированных полей. Некоторые семантические структуры содержат \`children\`, однако состав их дочерних узлов семантически ограничен (например, \`tabs\` (вкладки) принимает только узлы \`tab_item\`). Семантические структуры допустимы в \`root\`, если не указано иное.
+
+**Носитель контента (Content Carrier)** – терминальный узел, несущий конкретный тип представления информации. Носители контента не имеют дочерних блочных узлов. Носители контента MUST NOT присутствовать в \`root\` непосредственно; они MUST присутствовать как значение именованного поля семантической структуры или как дочерний узел семантического контейнера.
+
+Специальный носитель контента \`text\` (текст) никогда не является самостоятельным блочным узлом. Он присутствует исключительно как значение именованного поля семантических структур.
+
+### 6.3 Семантические контейнеры
+
+Все семантические контейнеры содержат следующие базовые поля:
+
+\`\`\`typescript
+interface SemanticContainerBase {
+  id:       NodeId
+  type:     string
+  children: BlockNode[]
+}
+\`\`\`
+
+Далее описываются семантические контейнеры, присутствующие в формате \`.doceo\` версии 1.0.
+
+#### 6.3.1 container
+
+Нейтральный блок группировки без семантической роли или поведения.
+
+\`\`\`typescript
+interface ContainerNode {
+  id:       NodeId
+  type:     "container"
+  children: BlockNode[]
+}
+\`\`\`
+
+#### 6.3.2 list
+
+Нумерованный, маркированный или контрольный список.
+
+\`\`\`typescript
+interface ListNode {
+  id:        NodeId
+  type:      "list"
+  list_type: "ordered" | "unordered" | "checklist"
+  children:  BlockNode[]
+}
+\`\`\`
+
+Дочерние узлы SHOULD быть узлами \`paragraph\` (абзац). Узел \`list\` MAY выступать дочерним узлом другого узла \`list\` для образования вложенного списка.
+
+При значении \`list_type\` равном \`"checklist"\` каждый дочерний узел представляет один проверяемый пункт. Состояние отмеченности пунктов контрольного списка является временным и управляется исключительно ридером. Оно не сохраняется в документе.
+
+#### 6.3.3 accordion
+
+Сворачиваемый блок. Отображает заголовок и переключает видимость дочерних узлов. При необходимости нескольких независимых сворачиваемых секций SHOULD использоваться несколько узлов \`accordion\`.
+
+\`\`\`typescript
+interface AccordionNode {
+  id:       NodeId
+  type:     "accordion"
+  label:    Text
+  children: BlockNode[]
+}
+\`\`\`
+
+#### 6.3.4 tabs
+
+Контейнер с вкладками. В каждый момент времени виден ровно один дочерний узел, выбираемый читателем. Дочерние узлы MUST быть узлами \`tab_item\` (элемент вкладки).
+
+\`\`\`typescript
+interface TabsNode {
+  id:       NodeId
+  type:     "tabs"
+  children: TabItemNode[]
+}
+
+interface TabItemNode {
+  id:       NodeId
+  type:     "tab_item"
+  label:    Text
+  children: BlockNode[]
+}
+\`\`\`
+
+Узлы \`tab_item\` MUST NOT присутствовать за пределами узла \`tabs\`.
+
+#### 6.3.5 stepper
+
+Последовательный пошаговый блок. В каждый момент времени виден ровно один дочерний узел. Навигация ограничена смежными шагами (предыдущий / следующий). Дочерние узлы MUST быть узлами \`step_item\` (шаг степпера).
+
+\`\`\`typescript
+interface StepperNode {
+  id:       NodeId
+  type:     "stepper"
+  children: StepItemNode[]
+}
+
+interface StepItemNode {
+  id:       NodeId
+  type:     "step_item"
+  label:    Text
+  children: BlockNode[]
+}
+\`\`\`
+
+Узлы \`step_item\` MUST NOT присутствовать за пределами узла \`stepper\`.
+
+#### 6.3.6 gallery
+
+Циклическое последовательное отображение дочерних узлов. Навигация перемещается вперёд и назад по дочерним узлам в циклическом режиме. Дочерними узлами MAY быть узлы \`container\` (контейнер), оборачивающие единственный узел \`image\` (изображение).
+
+\`\`\`typescript
+interface GalleryNode {
+  id:       NodeId
+  type:     "gallery"
+  children: BlockNode[]
+}
+\`\`\`
+
+#### 6.3.7 callout
+
+Семантически выделенный блок, используемый для примечаний, предупреждений, советов или сообщений об опасности.
+
+\`\`\`typescript
+interface CalloutNode {
+  id:           NodeId
+  type:         "callout"
+  callout_type: "info" | "warning" | "danger" | "tip"
+  children:     BlockNode[]
+}
+\`\`\`
+
+#### 6.3.8 quote
+
+Блочная цитата.
+
+\`\`\`typescript
+interface QuoteNode {
+  id:       NodeId
+  type:     "quote"
+  children: BlockNode[]
+}
+\`\`\`
+
+### 6.4 Семантические структуры
+
+#### 6.4.1 paragraph
+
+Блок основного текста. Единственная семантическая обёртка для форматированного текста в потоке документа.
+
+\`\`\`typescript
+interface ParagraphNode {
+  id:      NodeId
+  type:    "paragraph"
+  content: Text
+}
+\`\`\`
+
+#### 6.4.2 heading
+
+Заголовок раздела с иерархическим уровнем.
+
+\`\`\`typescript
+interface HeadingNode {
+  id:      NodeId
+  type:    "heading"
+  level:   1 | 2 | 3 | 4 | 5 | 6
+  content: Text
+}
+\`\`\`
+
+#### 6.4.3 figure
+
+Медиаэлемент в паре с подписью.
+
+\`\`\`typescript
+interface FigureNode {
+  id:      NodeId
+  type:    "figure"
+  media:   ImageLeaf | VideoLeaf | CanvasLeaf
+  caption: Text
+}
+\`\`\`
+
+#### 6.4.4 table
+
+Двумерная структура данных с необязательной подписью.
+
+\`\`\`typescript
+interface TableNode {
+  id:       NodeId
+  type:     "table"
+  caption?: Text
+  head:     TableSection
+  body:     TableSection
+}
+
+interface TableSection {
+  rows: TableRow[]
+}
+
+interface TableRow {
+  id:    NodeId
+  cells: TableCell[]
+}
+
+interface TableCell {
+  id:        NodeId
+  is_header: boolean
+  content:   Text
+}
+\`\`\`
+
+Узлы \`row\` (строка) и \`cell\` (ячейка) MUST NOT присутствовать за пределами узла \`table\` (таблица).
+
+#### 6.4.5 quiz
+
+Интерактивный блок самопроверки.
+
+\`\`\`typescript
+interface QuizNode {
+  id:            NodeId
+  type:          "quiz"
+  input_type:    "radio" | "checkbox" | "text"
+  question:      QuizQuestion
+  options?:      QuizOption[]    // обязательно при input_type равном "radio" или "checkbox"
+  correct?:      string[]        // идентификаторы вариантов; обязательно при input_type равном "radio" или "checkbox"
+  correct_text?: CorrectText     // обязательно при input_type равном "text"
+}
+
+interface QuizQuestion {
+  children: BlockNode[]
+}
+
+interface QuizOption {
+  id:       string
+  children: (Text | ImageLeaf)[]
+}
+
+interface CorrectText {
+  match:   "exact" | "regex"
+  pattern: string
+  flags?:  string             // флаги регулярного выражения, например "i"
+}
+\`\`\`
+
+Массив \`QuizOption.children\` MUST содержать не более одного элемента типа \`Text\` и не более одного элемента типа \`ImageLeaf\`. Объект \`QuizOption\` без дочерних элементов является невалидным.
+
+#### 6.4.6 divider
+
+Тематический разрыв между разделами содержимого. Не содержит полей с данными.
+
+\`\`\`typescript
+interface DividerNode {
+  id:   NodeId
+  type: "divider"
+}
+\`\`\`
+
+Узел \`divider\` (разделитель) является семантической структурой и допустим в \`root\` и массивах \`children\`.
+
+### 6.5 Носители контента
+
+#### 6.5.1 text
+
+Единственный носитель форматированного встроенного содержимого. Узел \`text\` никогда не является самостоятельным блочным узлом. Он присутствует исключительно как значение именованного поля семантических структур.
+
+\`\`\`typescript
+interface Text {
+  type:    "text"
+  inlines: InlineNode[]
+}
+\`\`\`
+
+#### 6.5.2 image
+
+Единственный носитель растрового или векторного изображения.
+
+\`\`\`typescript
+interface ImageLeaf {
+  id:   NodeId
+  type: "image"
+  src:  string    // путь к ресурсу, например "media/img_a3f1.webp"
+  alt:  string    // непустой альтернативный текст
+}
+\`\`\`
+
+#### 6.5.3 video
+
+Видеоресурс, встроенный в архив как ресурс или указанный по URL.
+
+\`\`\`typescript
+interface VideoLeaf {
+  id:            NodeId
+  type:          "video"
+  src_type:      "file" | "url"
+  src:           string          // путь к ресурсу или URL
+  aspect_ratio?: string          // например "16:9"
+}
+\`\`\`
+
+#### 6.5.4 code
+
+Блок исходного кода.
+
+\`\`\`typescript
+interface CodeLeaf {
+  id:       NodeId
+  type:     "code"
+  language: string    // идентификатор языка, например "python", "bash"
+  code:     string
+}
+\`\`\`
+
+#### 6.5.5 formula
+
+Математическое выражение блочного уровня в нотации LaTeX.
+
+\`\`\`typescript
+interface FormulaLeaf {
+  id:    NodeId
+  type:  "formula"
+  latex: string
+}
+\`\`\`
+
+#### 6.5.6 canvas
+
+Растровый рисунок, созданный автором документа.
+
+\`\`\`typescript
+interface CanvasLeaf {
+  id:     NodeId
+  type:   "canvas"
+  width:  number    // в пикселях
+  height: number    // в пикселях
+  src:    string    // путь к ресурсу PNG
+}
+\`\`\`
+
+#### 6.5.7 diagram
+
+Диаграмма, определённая на формальном текстовом синтаксисе.
+
+\`\`\`typescript
+interface DiagramLeaf {
+  id:     NodeId
+  type:   "diagram"
+  syntax: "mermaid"
+  code:   string
+}
+\`\`\`
+
+---
+
+## 7. Модель встроенных узлов
+
+Встроенные узлы существуют исключительно внутри объектов \`Text\`. Они образуют рекурсивное дерево типизированных сегментов.
+
+\`\`\`typescript
+type InlineNode = SpanInline
+               | InlineCodeInline
+               | InlineFormulaInline
+               | CopySnippetInline
+               | LinkInline
+               | AnchorLinkInline
+               | SpoilerInline
+
+type Mark = "bold" | "italic" | "underline" | "strikethrough"
+\`\`\`
+
+### 7.1 Терминальные встроенные узлы
+
+Терминальные встроенные узлы (Inline Terminals) являются листовыми встроенными узлами. Они несут текстовое содержимое и не имеют встроенных дочерних узлов.
+
+#### span
+
+Прогон простого или стилизованного текста.
+
+\`\`\`typescript
+interface SpanInline {
+  type:  "span"
+  text:  string
+  marks: Mark[]
+}
+\`\`\`
+
+Массив \`marks\` (метки выделения) MAY быть пустым. Несколько меток выделения MAY применяться одновременно.
+
+#### inline_code
+
+Прогон кода в потоке текста. Отображается шрифтом с фиксированной шириной символов. Метки выделения не применяются.
+
+\`\`\`typescript
+interface InlineCodeInline {
+  type: "inline_code"
+  code: string
+}
+\`\`\`
+
+#### inline_formula
+
+Математическое выражение встроенного уровня в нотации LaTeX.
+
+\`\`\`typescript
+interface InlineFormulaInline {
+  type:  "inline_formula"
+  latex: string
+}
+\`\`\`
+
+#### copy_snippet
+
+Текстовый сегмент, снабжённый элементом управления «копировать в буфер обмена». Копируемое содержимое всегда является простым текстом (plain text).
+
+\`\`\`typescript
+interface CopySnippetInline {
+  type: "copy_snippet"
+  text: string
+}
+\`\`\`
+
+### 7.2 Узлы-обёртки
+
+Узлы-обёртки (Inline Wrappers) несут семантическое поведение и содержат другие встроенные узлы в качестве дочерних.
+
+#### link
+
+Гиперссылка на внешний URL.
+
+\`\`\`typescript
+interface LinkInline {
+  type:    "link"
+  href:    string        // абсолютный URL
+  content: InlineNode[]
+}
+\`\`\`
+
+#### anchor_link
+
+Гиперссылка на блочный узел в рамках того же документа, идентифицируемый по его \`id\`.
+
+\`\`\`typescript
+interface AnchorLinkInline {
+  type:      "anchor_link"
+  target_id: NodeId
+  content:   InlineNode[]
+}
+\`\`\`
+
+#### spoiler
+
+Встроенный сегмент, скрытый по умолчанию и раскрываемый по взаимодействию пользователя.
+
+\`\`\`typescript
+interface SpoilerInline {
+  type:    "spoiler"
+  content: InlineNode[]
+}
+\`\`\`
+
+---
+
+## 8. Правила валидации
+
+Следующие инварианты определяют валидный документ Doceo. Совместимый валидатор MUST сообщать о нарушении каждого неудовлетворённого инварианта.
+
+| Идентификатор | Область | Правило |
+|---------------|---------|---------|
+| INV-001 | Документ | Каждое значение \`id\` MUST быть уникальным в рамках документа |
+| INV-002 | root | \`root\` MUST содержать только семантические контейнеры и семантические структуры. Носители контента MUST NOT присутствовать в \`root\` |
+| INV-003 | text | \`text\` MUST NOT присутствовать как самостоятельный блок в \`root\` или массивах \`children\`. Он MUST присутствовать только как значение именованного поля |
+| INV-004 | Встроенные узлы | Встроенные узлы MUST существовать только внутри объектов \`Text\`. Они MUST NOT присутствовать как блочные узлы |
+| INV-005 | tabs | Массив \`children\` узла \`tabs\` MUST содержать только узлы \`tab_item\` |
+| INV-006 | stepper | Массив \`children\` узла \`stepper\` MUST содержать только узлы \`step_item\` |
+| INV-007 | tab_item | Узлы \`tab_item\` MUST NOT присутствовать за пределами узла \`tabs\` |
+| INV-008 | step_item | Узлы \`step_item\` MUST NOT присутствовать за пределами узла \`stepper\` |
+| INV-009 | figure | Поле \`media\` узла \`figure\` MUST быть одним из: \`image\`, \`video\`, \`canvas\` |
+| INV-010 | table | Узлы \`row\` MUST NOT присутствовать за пределами узла \`table\`. Узлы \`cell\` MUST NOT присутствовать за пределами узла \`row\` |
+| INV-011 | quiz | При значении \`input_type\` равном \`"radio"\` или \`"checkbox"\` поля \`options\` и \`correct\` MUST присутствовать |
+| INV-012 | quiz | При значении \`input_type\` равном \`"text"\` поле \`correct_text\` MUST присутствовать |
+| INV-013 | anchor_link | Значение \`target_id\` узла \`anchor_link\` MUST ссылаться на существующий \`id\` узла в рамках того же документа |
+| INV-014 | Ресурсы | Каждый путь к ресурсу, указанный в \`content.json\`, MUST иметь соответствующую запись в поле \`assets\` файла \`manifest.json\` |
+| INV-015 | Ресурсы | Каждая запись в поле \`assets\` файла \`manifest.json\` MUST соответствовать файлу, присутствующему в архиве |
+| INV-016 | quiz | Массив \`QuizOption.children\` MUST содержать не более одного элемента типа \`Text\` и не более одного элемента типа \`ImageLeaf\`. Объект \`QuizOption\` без дочерних элементов является невалидным |
+
+---
+
+## 9. Версионирование и совместимость
+
+### 9.1 Идентификатор версии
+
+Версия формата представляет собой строку вида \`MAJOR.MINOR\`, например \`"1.0"\`.
+
+- Инкремент **MINOR** указывает исключительно на аддитивные изменения: новые необязательные поля, новые типы узлов, новые встроенные типы, новые значения перечислений. Обратная совместимость сохраняется.
+- Инкремент **MAJOR** указывает на несовместимые изменения: удаление полей, переименование полей, изменение семантики существующих типов узлов.
+
+### 9.2 Контракт обратной совместимости
+
+Ридер, реализующий версию N.x, MUST быть способен обрабатывать любой документ с версией N.y, где y ≤ x, при соблюдении следующих правил:
+
+1. Неизвестные поля любого узла MUST игнорироваться.
+2. Неизвестные значения \`type\` блочных узлов MUST обрабатываться в соответствии с разделом 3.5.
+3. Неизвестные значения \`type\` встроенных узлов MUST трактоваться как пустой фрагмент.
+4. Неизвестные значения перечислений (например, неизвестные \`callout_type\`, \`list_type\`) MUST трактоваться как значение по умолчанию для соответствующего поля (при его наличии) или игнорироваться.
+
+### 9.3 Прямая совместимость
+
+Ридер, реализующий версию N, SHOULD NOT предпринимать попытку обработки документа с версией M, где M > N, без выдачи предупреждения. Ридер MAY выполнять отображение по возможности (best-effort), игнорируя неизвестные конструкции согласно правилам раздела 9.2.
+
+---
+
+## 10. Приложение А – Полный справочник узлов
+
+| Тип | Класс | Допустим в root/children | Ключевые поля |
+|-----|-------|--------------------------|---------------|
+| \`container\` | Семантический контейнер | да | \`children[]\` |
+| \`list\` | Семантический контейнер | да | \`children[]\`, \`list_type\` |
+| \`accordion\` | Семантический контейнер | да | \`label\`, \`children[]\` |
+| \`tabs\` | Семантический контейнер | да | \`children: tab_item[]\` |
+| \`tab_item\` | Семантический контейнер | только в \`tabs\` | \`label\`, \`children[]\` |
+| \`stepper\` | Семантический контейнер | да | \`children: step_item[]\` |
+| \`step_item\` | Семантический контейнер | только в \`stepper\` | \`label\`, \`children[]\` |
+| \`gallery\` | Семантический контейнер | да | \`children[]\` |
+| \`callout\` | Семантический контейнер | да | \`children[]\`, \`callout_type\` |
+| \`quote\` | Семантический контейнер | да | \`children[]\` |
+| \`paragraph\` | Семантическая структура | да | \`content: Text\` |
+| \`heading\` | Семантическая структура | да | \`content: Text\`, \`level\` |
+| \`figure\` | Семантическая структура | да | \`media\`, \`caption: Text\` |
+| \`table\` | Семантическая структура | да | \`head\`, \`body\`, \`caption?\` |
+| \`row\` | Семантическая структура | только в \`table\` | \`cells[]\` |
+| \`cell\` | Семантическая структура | только в \`row\` | \`content: Text\`, \`is_header\` |
+| \`quiz\` | Семантическая структура | да | \`question\`, \`options[]\`, \`input_type\`, \`correct\` |
+| \`divider\` | Семантическая структура | да | – |
+| \`text\` | Носитель контента | только как поле | \`inlines[]\` |
+| \`image\` | Носитель контента | только в контейнере/поле | \`src\`, \`alt\` |
+| \`video\` | Носитель контента | только в контейнере/поле | \`src_type\`, \`src\` |
+| \`code\` | Носитель контента | только в контейнере/поле | \`language\`, \`code\` |
+| \`formula\` | Носитель контента | только в контейнере/поле | \`latex\` |
+| \`canvas\` | Носитель контента | только в контейнере/поле | \`width\`, \`height\`, \`src\` |
+| \`diagram\` | Носитель контента | только в контейнере/поле | \`syntax\`, \`code\` |
+| \`span\` | Терминальный встроенный узел | только в \`text\` | \`text\`, \`marks[]\` |
+| \`inline_code\` | Терминальный встроенный узел | только в \`text\` | \`code\` |
+| \`inline_formula\` | Терминальный встроенный узел | только в \`text\` | \`latex\` |
+| \`copy_snippet\` | Терминальный встроенный узел | только в \`text\` | \`text\` |
+| \`link\` | Узел-обёртка | только в \`text\` | \`href\`, \`content[]\` |
+| \`anchor_link\` | Узел-обёртка | только в \`text\` | \`target_id\`, \`content[]\` |
+| \`spoiler\` | Узел-обёртка | только в \`text\` | \`content[]\` |
+
+---
+
+## 11. Приложение Б – Полный пример документа
+
+Приведённый пример представляет собой фрагмент руководства по виртуальным окружениям Python. Он демонстрирует использование всех основных типов узлов, определённых в настоящей спецификации.
+
+\`\`\`json
+{
+  "root": [
+    {
+      "id": "a1b2c3d4",
+      "type": "heading",
+      "level": 1,
+      "content": {
+        "type": "text",
+        "inlines": [
+          { "type": "span", "text": "Виртуальные окружения Python", "marks": [] }
+        ]
+      }
+    },
+    {
+      "id": "b2c3d4e5",
+      "type": "paragraph",
+      "content": {
+        "type": "text",
+        "inlines": [
+          { "type": "span", "text": "Данное руководство охватывает создание и активацию окружений ", "marks": [] },
+          { "type": "inline_code", "code": "venv" },
+          { "type": "span", "text": ".", "marks": [] }
+        ]
+      }
+    },
+    {
+      "id": "c3d4e5f6",
+      "type": "callout",
+      "callout_type": "info",
+      "children": [
+        {
+          "id": "d4e5f6g7",
+          "type": "paragraph",
+          "content": {
+            "type": "text",
+            "inlines": [
+              { "type": "span", "text": "Требуется Python ", "marks": [] },
+              { "type": "inline_code", "code": "3.3+" },
+              { "type": "span", "text": ". Проверьте версию командой ", "marks": [] },
+              { "type": "copy_snippet", "text": "python --version" },
+              { "type": "span", "text": ".", "marks": [] }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "e5f6g7h8",
+      "type": "tabs",
+      "children": [
+        {
+          "id": "f6g7h8i9",
+          "type": "tab_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Unix / macOS", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "g7h8i9j0",
+              "type": "container",
+              "children": [
+                {
+                  "id": "h8i9j0k1",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "source venv/bin/activate"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "i9j0k1l2",
+          "type": "tab_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Windows", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "j0k1l2m3",
+              "type": "container",
+              "children": [
+                {
+                  "id": "k1l2m3n4",
+                  "type": "code",
+                  "language": "bat",
+                  "code": "venv\\Scripts\\activate.bat"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "l2m3n4o5",
+      "type": "stepper",
+      "children": [
+        {
+          "id": "m3n4o5p6",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Создать окружение", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "n4o5p6q7",
+              "type": "container",
+              "children": [
+                {
+                  "id": "o5p6q7r8",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "python -m venv venv"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "p6q7r8s9",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Активировать окружение", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "q7r8s9t0",
+              "type": "paragraph",
+              "content": {
+                "type": "text",
+                "inlines": [
+                  { "type": "span", "text": "См. ", "marks": [] },
+                  {
+                    "type": "anchor_link",
+                    "target_id": "e5f6g7h8",
+                    "content": [{ "type": "span", "text": "вкладки активации выше", "marks": [] }]
+                  },
+                  { "type": "span", "text": ".", "marks": [] }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "r8s9t0u1",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Установить зависимости", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "s9t0u1v2",
+              "type": "container",
+              "children": [
+                {
+                  "id": "t0u1v2w3",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "pip install -r requirements.txt"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1v2w3x4",
+      "type": "divider"
+    },
+    {
+      "id": "v2w3x4y5",
+      "type": "quiz",
+      "input_type": "radio",
+      "question": {
+        "children": [
+          {
+            "id": "w3x4y5z6",
+            "type": "paragraph",
+            "content": {
+              "type": "text",
+              "inlines": [
+                { "type": "span", "text": "Какая команда активирует окружение на Unix?", "marks": [] }
+              ]
+            }
+          }
+        ]
+      },
+      "options": [
+        {
+          "id": "opt1",
+          "children": [
+            { "type": "text", "inlines": [{ "type": "inline_code", "code": "venv\\Scripts\\activate.bat" }] }
+          ]
+        },
+        {
+          "id": "opt2",
+          "children": [
+            { "type": "text", "inlines": [{ "type": "inline_code", "code": "source venv/bin/activate" }] }
+          ]
+        }
+      ],
+      "correct": ["opt2"]
+    },
+    {
+      "id": "x4y5z6a7",
+      "type": "accordion",
+      "label": {
+        "type": "text",
+        "inlines": [{ "type": "span", "text": "Типичные ошибки и способы их устранения", "marks": [] }]
+      },
+      "children": [
+        {
+          "id": "y5z6a7b8",
+          "type": "callout",
+          "callout_type": "danger",
+          "children": [
+            {
+              "id": "z6a7b8c9",
+              "type": "paragraph",
+              "content": {
+                "type": "text",
+                "inlines": [
+                  { "type": "span", "text": "При ошибке ", "marks": [] },
+                  { "type": "inline_code", "code": "command not found: python" },
+                  { "type": "span", "text": " попробуйте использовать ", "marks": [] },
+                  { "type": "inline_code", "code": "python3" },
+                  { "type": "span", "text": ".", "marks": [] }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+\`\`\``;
+
+    const enSpec = `
+## Table of Contents
+
+1. [Introduction](#1-introduction)
+2. [Terms and Definitions](#2-terms-and-definitions)
+3. [Conventions](#3-conventions)
+4. [File Structure](#4-file-structure)
+5. [Manifest Specification](#5-manifestjson-specification)
+6. [Content Specification](#6-contentjson-specification)
+   - 6.1 [Document Root](#61-document-root)
+   - 6.2 [Node Classification](#62-node-classification)
+   - 6.3 [Semantic Containers](#63-semantic-containers)
+   - 6.4 [Semantic Structures](#64-semantic-structures)
+   - 6.5 [Content Carriers](#65-content-carriers)
+7. [Inline Model](#7-inline-model)
+8. [Validation Rules](#8-validation-rules)
+9. [Versioning and Compatibility](#9-versioning-and-compatibility)
+10. [Appendix A – Full Node Reference](#10-appendix-a--full-node-reference)
+11. [Appendix B – Full Document Example](#11-appendix-b--full-document-example)
+
+---
+
+## 1. Introduction
+
+### 1.1 Purpose
+
+This document defines the DOCEO file format (\`.doceo\`), a container format for interactive educational documents. The format is designed for authoring, distribution, and rendering of structured documents that may include interactive components such as tabbed content, step-by-step algorithms, quizzes, and galleries.
+
+### 1.2 Scope
+
+This specification covers:
+
+- The physical structure of a \`.doceo\` file
+- The schema of \`manifest.json\`
+- The schema of \`content.json\`
+- The inline content model
+- Validation invariants
+- Versioning policy
+
+This specification does not cover rendering behavior, editor implementation, or server-side processing.
+
+### 1.3 Intended Audience
+
+This specification is intended for developers implementing Doceo-compatible readers, writers, validators, or conversion tools.
+
+### 1.4 Document Model Concept
+
+A \`.doceo\` document is a **stateless, self-contained content artifact**. The following properties hold by definition:
+
+**Statelessness.** A document contains no reader state. It does not record which tab was last selected, which accordion was open, which stepper step was active, or which checklist items were checked. All such state is ephemeral and managed exclusively by the reader for the duration of a single reading session.
+
+**Deterministic rendering.** Given the same \`.doceo\` file and a conforming reader, the initial rendered presentation MUST be identical across all readings, on all platforms, at any point in time. The document is a pure function of its content.
+
+**Self-containment.** All content required to render the document is either embedded within the archive or referenced by an explicit \`src_type: "url"\` field. A reader MUST NOT depend on any external state, session, or service to produce the initial rendering of a document, except when resolving \`src_type: "url"\` media references.
+
+These properties together guarantee that a \`.doceo\` file is fully portable and its presentation is verifiable against its content at any time.
+
+---
+
+## 2. Terms and Definitions
+
+**Document** – A single \`.doceo\` file representing a complete unit of content.
+
+**Archive** – The ZIP container that physically stores a \`.doceo\` file.
+
+**Manifest** – The file \`manifest.json\` located at the root of the archive. Describes the document's metadata, asset inventory, and integrity signature.
+
+**Content** – The file \`content.json\` located at the root of the archive. Describes the document's node tree.
+
+**Asset** – Any media file (image, video, canvas raster) stored in the archive and referenced by content nodes.
+
+**Node** – A single element in the document tree. Every node has a unique \`id\` and a discriminating \`type\` field.
+
+**Semantic Container** – A node that organizes an arbitrary sequence of child nodes through a specific layout behavior or semantic role. Its child composition is unrestricted by schema.
+
+**Semantic Structure** – A node with a fixed, named set of typed fields. Child composition is defined by the schema, not by a generic \`children\` array.
+
+**Content Carrier** – A terminal node that carries a specific content substance (rich text, raster image, video, code, formula, canvas, diagram). Content Carriers have no block-level children.
+
+**Text** – A Content Carrier carrying a sequence of inline nodes. \`text\` is never a standalone block in the document tree; it appears exclusively as a named field value within Semantic Structures.
+
+**Inline Node** – An element that exists within a \`text\` Content Carrier. Inline nodes form the rich text content model.
+
+**Discriminated Union** – A JSON object whose type is unambiguously determined by the value of its \`type\` field.
+
+**NodeId** – An 8-character alphanumeric identifier generated by a nanoid algorithm, unique within the scope of a single document.
+
+**Legal Modification** – Any modification of a document performed through a conforming writer implementation acting on behalf of the document's author. Direct manipulation of archive contents outside of a conforming writer constitutes an illegal modification.
+
+**Backward Compatibility** – The guarantee that a reader implementing version N of this specification can correctly process documents produced under any version M where M ≤ N, provided the reader ignores unknown fields and unknown node types.
+
+---
+
+## 3. Conventions
+
+### 3.1 Notation
+
+Type definitions in this specification use TypeScript-like notation for clarity. This notation is declarative and does not imply any implementation language.
+
+\`\`\`
+type NodeId = string        // 8-character nanoid
+type HexColor = string      // e.g. "#ff0000"
+
+interface ExampleNode {
+  id:       NodeId          // required
+  type:     "example"       // required, literal discriminator
+  label?:   Text            // optional field (marked with ?)
+  level:    1 | 2 | 3       // union of literals
+}
+\`\`\`
+
+### 3.2 Field Requirements
+
+| Marker | Meaning |
+|--------|---------|
+| No marker | Field is required. Its absence makes the document invalid. |
+| \`?\` suffix | Field is optional. Its absence is valid. |
+
+### 3.3 Key Words
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+
+### 3.4 Unknown Fields
+
+A conforming reader MUST ignore unknown fields on any node. This is required for forward compatibility with future versions of this specification.
+
+### 3.5 Unknown Node Types
+
+A conforming reader that encounters a node with an unknown \`type\` value MUST NOT fail. It SHOULD render a neutral fallback placeholder in place of the unknown node.
+
+---
+
+## 4. File Structure
+
+### 4.1 Container Format
+
+A \`.doceo\` file is a ZIP archive as defined by the ZIP file format specification ([PKWARE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)). The archive MUST use the \`.doceo\` file extension.
+
+The archive MUST contain the following files at its root:
+
+\`\`\`
+document.doceo
+├── manifest.json
+└── content.json
+\`\`\`
+
+The archive MAY contain a \`media/\` directory:
+
+\`\`\`
+document.doceo
+├── manifest.json
+├── content.json
+└── media/
+    ├── <asset_filename>
+    └── ...
+\`\`\`
+
+### 4.2 Constraints
+
+- \`manifest.json\` MUST be present.
+- \`content.json\` MUST be present.
+- All asset files referenced in \`manifest.json\` under the \`assets\` field MUST be present in the archive at the path specified by their \`path\` field.
+- No asset file may be present in the archive without a corresponding entry in the \`assets\` array of \`manifest.json\`.
+
+### 4.3 Media Files
+
+Supported media file types:
+
+| Category | Formats |
+|----------|---------|
+| Raster image | \`.webp\`, \`.png\`, \`.jpg\`, \`.jpeg\`, \`.gif\` |
+| Video | \`.mp4\` |
+| Canvas raster | \`.png\` |
+
+---
+
+## 5. Manifest Specification
+
+### 5.1 Schema
+
+manifest.json MUST be an implementation of the following Manifest interface.
+
+\`\`\`typescript
+interface Manifest {
+  version:          string       // format version, e.g. "1.0"
+  meta:             DocumentMeta
+  content_filename: string       // always "content.json" in v1.0
+  assets:           Asset[]
+  content_sha256:   string       // hex-encoded SHA-256 of content.json
+  signature?:       string       // HMAC-SHA256 signature (see 5.5)
+}
+
+interface DocumentMeta {
+  id:         string             // UUIDv7
+  title:      string
+  author_id:  string             // UUIDv7 of platform user
+  created_at: string             // ISO 8601, UTC
+  updated_at: string             // ISO 8601, UTC
+}
+
+interface Asset {
+  path:   string                 // relative path within archive, e.g. "media/img_a3f1.webp"
+  sha256: string                 // hex-encoded SHA-256 of asset file content
+}
+\`\`\`
+
+### 5.2 Field Descriptions
+
+**\`version\`** – The version of the Doceo format specification to which this document conforms. A reader MUST check this field before processing the document. If the version is higher than the reader supports, the reader SHOULD warn the user.
+
+**\`meta.id\`** – A UUIDv7 identifier assigned to the document at creation time. This identifier persists across edits and republications. It MUST NOT be changed after initial assignment.
+
+**\`meta.author_id\`** – The UUIDv7 identifier of the platform user who created the document. Resolution of this identifier to a human-readable name is outside the scope of this specification.
+
+**\`meta.created_at\`** and **\`meta.updated_at\`** – ISO 8601 datetime strings in UTC. \`updated_at\` MUST be updated on every Legal Modification of the document (see section 2).
+
+**\`content_filename\`** – The filename of the content file within the archive. In version 1.0, this value MUST be \`"content.json"\`. This field is provided for forward compatibility.
+
+**\`assets\`** – An inventory of all media files present in the archive. Each entry specifies the file's relative path and its SHA-256 checksum. A reader MAY use this inventory to verify asset integrity before rendering.
+
+**\`content_sha256\`** – The SHA-256 checksum of \`content.json\`. This field is included in the signature payload (see 5.5).
+
+### 5.3 Example
+
+\`\`\`json
+{
+  "version": "1.0",
+  "meta": {
+    "id": "01952f3a-7b4c-7d3e-9f1a-2c4b6d8e0a2f",
+    "title": "Introduction to Python Virtual Environments",
+    "author_id": "01945c2b-1a3d-7e4f-8b2c-3d5a7f9e1c0b",
+    "created_at": "2025-05-06T10:30:00Z",
+    "updated_at": "2025-05-06T14:15:00Z"
+  },
+  "content_filename": "content.json",
+  "assets": [
+    {
+      "path": "media/img_a3f1.webp",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb924..."
+    }
+  ],
+  "content_sha256": "9f86d081884c7d659a2feaa0c55ad015...",
+  "signature": "HS256:5d41402abc4b2a76b9719d911017c592..."
+}
+\`\`\`
+
+### 5.4 Signature Absence
+
+The \`signature\` field is OPTIONAL. A document without a signature is valid and processable. The absence of a signature indicates that the document has not been published through or verified by a Doceum platform server.
+
+A reader SHOULD distinguish between three states and communicate them to the user:
+
+| State | Condition |
+|-------|-----------|
+| Unsigned | Signature field absent |
+| Verified | Signature present and valid |
+| Tampered | Signature present but invalid |
+
+### 5.5 Signature Algorithm
+
+The signature is an HMAC-SHA256 value computed by a Doceum platform server using a server-held secret key.
+
+The signature payload is the concatenation of:
+1. The canonical JSON serialization of the \`manifest.json\` object with the \`signature\` field omitted
+2. The value of \`content_sha256\`
+3. The SHA-256 checksum of each asset file, in the order they appear in the \`assets\` array
+
+The \`signature\` field value is prefixed with the algorithm identifier: \`HS256:<hex-encoded-hmac>\`.
+
+---
+
+## 6. Content Specification
+
+### 6.1 Document Root
+
+content.json MUST be an implementation of the following ContentDocument interface.
+
+\`\`\`typescript
+interface ContentDocument {
+  root: BlockNode[]
+}
+\`\`\`
+
+**\`root\`** – The top-level sequence of block nodes. This array MUST contain only Semantic Containers and Semantic Structures. Content Carriers MUST NOT appear directly in \`root\`.
+
+The authoritative version of the format is declared in \`manifest.json\` under the \`version\` field. \`content.json\` does not carry a version field.
+
+### 6.2 Node Classification
+
+All block nodes are classified into one of three categories:
+
+**Semantic Container** – A node that holds an arbitrary sequence of child block nodes in a \`children\` array. The nature of the children is governed by layout behavior, not by a fixed schema. Semantic Containers are valid in \`root\` and in any \`children\` array.
+
+**Semantic Structure** – A node with a fixed, named contract of typed fields. Some Semantic Structures contain \`children\`; however, their child composition is semantically constrained (e.g., \`tabs\` accepts only \`tab_item\` children). Semantic Structures are valid in \`root\` unless otherwise specified.
+
+**Content Carrier** – A terminal node carrying a specific content substance. Content Carriers have no block-level children. Content Carriers MUST NOT appear in \`root\` directly; they MUST appear as a named field value of a Semantic Structure or as a child of a Semantic Container.
+
+The special Content Carrier \`text\` is never a standalone block node. It appears exclusively as a named field value within Semantic Structures.
+
+### 6.3 Semantic Containers
+
+All Semantic Containers carry the following base fields:
+
+\`\`\`typescript
+interface SemanticContainerBase {
+  id:       NodeId
+  type:     string
+  children: BlockNode[]
+}
+\`\`\`
+
+Next, the semantic containers present in \`.doceo\` of 1.0 version are described.
+
+#### 6.3.1 container
+
+A neutral grouping block with no semantic role or behavior.
+
+\`\`\`typescript
+interface ContainerNode {
+  id:       NodeId
+  type:     "container"
+  children: BlockNode[]
+}
+\`\`\`
+
+#### 6.3.2 list
+
+An ordered, unordered, or checklist-style list.
+
+\`\`\`typescript
+interface ListNode {
+  id:        NodeId
+  type:      "list"
+  list_type: "ordered" | "unordered" | "checklist"
+  children:  BlockNode[]
+}
+\`\`\`
+
+Children SHOULD be \`paragraph\` nodes. A \`list\` node MAY appear as a child of another \`list\` node to represent a nested list.
+
+When \`list_type\` is \`"checklist"\`, each child represents a checkable item. The checked or unchecked state of checklist items is ephemeral and managed exclusively by the reader. It is not persisted in the document.
+
+#### 6.3.3 accordion
+
+A collapsible block. Displays a label and toggles visibility of its children. When multiple independent collapsible sections are required, multiple \`accordion\` nodes SHOULD be used.
+
+\`\`\`typescript
+interface AccordionNode {
+  id:       NodeId
+  type:     "accordion"
+  label:    Text
+  children: BlockNode[]
+}
+\`\`\`
+
+#### 6.3.4 tabs
+
+A tabbed container. Exactly one child is visible at a time, selected by the reader. Children MUST be \`tab_item\` nodes.
+
+\`\`\`typescript
+interface TabsNode {
+  id:       NodeId
+  type:     "tabs"
+  children: TabItemNode[]
+}
+
+interface TabItemNode {
+  id:       NodeId
+  type:     "tab_item"
+  label:    Text
+  children: BlockNode[]
+}
+\`\`\`
+
+\`tab_item\` nodes MUST NOT appear outside a \`tabs\` node.
+
+#### 6.3.5 stepper
+
+A sequential step-by-step block. Exactly one child is visible at a time. Navigation is restricted to adjacent steps (previous / next). Children MUST be \`step_item\` nodes.
+
+\`\`\`typescript
+interface StepperNode {
+  id:       NodeId
+  type:     "stepper"
+  children: StepItemNode[]
+}
+
+interface StepItemNode {
+  id:       NodeId
+  type:     "step_item"
+  label:    Text
+  children: BlockNode[]
+}
+\`\`\`
+
+\`step_item\` nodes MUST NOT appear outside a \`stepper\` node.
+
+#### 6.3.6 gallery
+
+A cyclic sequential display of children. Navigation moves forward and backward through children in a looping sequence. Children MAY be \`container\` nodes wrapping a single \`image\`.
+
+\`\`\`typescript
+interface GalleryNode {
+  id:       NodeId
+  type:     "gallery"
+  children: BlockNode[]
+}
+\`\`\`
+
+#### 6.3.7 callout
+
+A semantically highlighted block used for notices, warnings, tips, or danger alerts.
+
+\`\`\`typescript
+interface CalloutNode {
+  id:           NodeId
+  type:         "callout"
+  callout_type: "info" | "warning" | "danger" | "tip"
+  children:     BlockNode[]
+}
+\`\`\`
+
+#### 6.3.8 quote
+
+A block quotation.
+
+\`\`\`typescript
+interface QuoteNode {
+  id:       NodeId
+  type:     "quote"
+  children: BlockNode[]
+}
+\`\`\`
+
+### 6.4 Semantic Structures
+
+#### 6.4.1 paragraph
+
+A body text block. The sole semantic wrapper for rich text in flow context.
+
+\`\`\`typescript
+interface ParagraphNode {
+  id:      NodeId
+  type:    "paragraph"
+  content: Text
+}
+\`\`\`
+
+#### 6.4.2 heading
+
+A section heading with a hierarchical level.
+
+\`\`\`typescript
+interface HeadingNode {
+  id:      NodeId
+  type:    "heading"
+  level:   1 | 2 | 3 | 4 | 5 | 6
+  content: Text
+}
+\`\`\`
+
+#### 6.4.3 figure
+
+A media element paired with a caption.
+
+\`\`\`typescript
+interface FigureNode {
+  id:      NodeId
+  type:    "figure"
+  media:   ImageLeaf | VideoLeaf | CanvasLeaf
+  caption: Text
+}
+\`\`\`
+
+#### 6.4.4 table
+
+A two-dimensional data structure with an optional caption.
+
+\`\`\`typescript
+interface TableNode {
+  id:       NodeId
+  type:     "table"
+  caption?: Text
+  head:     TableSection
+  body:     TableSection
+}
+
+interface TableSection {
+  rows: TableRow[]
+}
+
+interface TableRow {
+  id:    NodeId
+  cells: TableCell[]
+}
+
+interface TableCell {
+  id:        NodeId
+  is_header: boolean
+  content:   Text
+}
+\`\`\`
+
+\`row\` and \`cell\` nodes MUST NOT appear outside a \`table\` node.
+
+#### 6.4.5 quiz
+
+An interactive self-assessment block.
+
+\`\`\`typescript
+interface QuizNode {
+  id:         NodeId
+  type:       "quiz"
+  input_type: "radio" | "checkbox" | "text"
+  question:   QuizQuestion
+  options?:   QuizOption[]    // required when input_type is "radio" or "checkbox"
+  correct?:   string[]        // option ids; required when input_type is "radio" or "checkbox"
+  correct_text?: CorrectText  // required when input_type is "text"
+}
+
+interface QuizQuestion {
+  children: BlockNode[]
+}
+
+interface QuizOption {
+  id:       string
+  children: (Text | ImageLeaf)[]
+}
+
+interface CorrectText {
+  match:   "exact" | "regex"
+  pattern: string
+  flags?:  string             // regex flags, e.g. "i"
+}
+\`\`\`
+
+\`QuizOption.children\` MUST contain at most one \`Text\` element and at most one \`ImageLeaf\` element. A \`QuizOption\` with no children is invalid.
+
+#### 6.4.6 divider
+
+A thematic break between content sections. Carries no content fields.
+
+\`\`\`typescript
+interface DividerNode {
+  id:   NodeId
+  type: "divider"
+}
+\`\`\`
+
+\`divider\` is a Semantic Structure and is valid in \`root\` and \`children\` arrays.
+
+### 6.5 Content Carriers
+#### 6.5.1 text
+
+The sole carrier of rich inline content. \`text\` is never a standalone block node. It appears exclusively as a named field value in Semantic Structures.
+
+\`\`\`typescript
+interface Text {
+  type:    "text"
+  inlines: InlineNode[]
+}
+\`\`\`
+
+#### 6.5.2 image
+
+The sole carrier of raster or vector image.
+
+\`\`\`typescript
+interface ImageLeaf {
+  id:   NodeId
+  type: "image"
+  src:  string    // asset path, e.g. "media/img_a3f1.webp"
+  alt:  string    // non-empty alternative text
+}
+\`\`\`
+
+#### 6.5.3 video
+
+A video resource, either embedded as an asset or referenced by URL.
+
+\`\`\`typescript
+interface VideoLeaf {
+  id:           NodeId
+  type:         "video"
+  src_type:     "file" | "url"
+  src:          string          // asset path or URL
+  aspect_ratio?: string         // e.g. "16:9"
+}
+\`\`\`
+
+#### 6.5.4 code
+
+A block of source code.
+
+\`\`\`typescript
+interface CodeLeaf {
+  id:       NodeId
+  type:     "code"
+  language: string    // language identifier, e.g. "python", "bash"
+  code:     string
+}
+\`\`\`
+
+#### 6.5.5 formula
+
+A block-level mathematical expression in LaTeX notation.
+
+\`\`\`typescript
+interface FormulaLeaf {
+  id:     NodeId
+  type:   "formula"
+  latex:  string
+}
+\`\`\`
+
+#### 6.5.6 canvas
+
+A raster drawing created by the document author.
+
+\`\`\`typescript
+interface CanvasLeaf {
+  id:     NodeId
+  type:   "canvas"
+  width:  number    // in pixels
+  height: number    // in pixels
+  src:    string    // asset path to PNG file
+}
+\`\`\`
+
+#### 6.5.7 diagram
+
+A diagram defined in a formal text-based syntax.
+
+\`\`\`typescript
+interface DiagramLeaf {
+  id:     NodeId
+  type:   "diagram"
+  syntax: "mermaid"
+  code:   string
+}
+\`\`\`
+
+---
+
+## 7. Inline Model
+
+Inline nodes exist exclusively within \`Text\` objects. They form a recursive tree of typed segments.
+
+\`\`\`typescript
+type InlineNode = SpanInline
+               | InlineCodeInline
+               | InlineFormulaInline
+               | CopySnippetInline
+               | LinkInline
+               | AnchorLinkInline
+               | SpoilerInline
+
+type Mark = "bold" | "italic" | "underline" | "strikethrough"
+\`\`\`
+
+### 7.1 Inline Terminals
+
+Inline Terminals are leaf-level inline nodes. They carry text content and have no inline children.
+
+#### span
+
+A run of plain or styled text.
+
+\`\`\`typescript
+interface SpanInline {
+  type:  "span"
+  text:  string
+  marks: Mark[]
+}
+\`\`\`
+
+\`marks\` MAY be an empty array. Multiple marks MAY be applied simultaneously.
+
+#### inline_code
+
+A run of code within a text flow. Rendered in a monospace typeface. No marks are applied.
+
+\`\`\`typescript
+interface InlineCodeInline {
+  type: "inline_code"
+  code: string
+}
+\`\`\`
+
+#### inline_formula
+
+An inline mathematical expression in LaTeX notation.
+
+\`\`\`typescript
+interface InlineFormulaInline {
+  type:  "inline_formula"
+  latex: string
+}
+\`\`\`
+
+#### copy_snippet
+
+A plain text segment accompanied by a copy-to-clipboard affordance. The copied content is always plain text.
+
+\`\`\`typescript
+interface CopySnippetInline {
+  type: "copy_snippet"
+  text: string
+}
+\`\`\`
+
+### 7.2 Inline Wrappers
+
+Inline Wrappers carry semantic behavior and contain other inline nodes as children.
+
+#### link
+
+A hyperlink to an external URL.
+
+\`\`\`typescript
+interface LinkInline {
+  type:    "link"
+  href:    string        // absolute URL
+  content: InlineNode[]
+}
+\`\`\`
+
+#### anchor_link
+
+A hyperlink to a block node within the same document, identified by its \`id\`.
+
+\`\`\`typescript
+interface AnchorLinkInline {
+  type:      "anchor_link"
+  target_id: NodeId
+  content:   InlineNode[]
+}
+\`\`\`
+
+#### spoiler
+
+An inline segment hidden by default and revealed on user interaction.
+
+\`\`\`typescript
+interface SpoilerInline {
+  type:    "spoiler"
+  content: InlineNode[]
+}
+\`\`\`
+
+---
+
+## 8. Validation Rules
+
+The following invariants define a valid Doceo document. A conforming validator MUST report a violation for each invariant that is not satisfied.
+
+| ID | Scope | Rule |
+|-------------|-------|------|
+| INV-001 | Document | Every \`id\` value MUST be unique within the document |
+| INV-002 | root | \`root\` MUST contain only Semantic Containers and Semantic Structures. Content Carriers MUST NOT appear in \`root\` |
+| INV-003 | text | \`text\` MUST NOT appear as a standalone block in \`root\` or \`children\` arrays. It MUST appear only as a named field value |
+| INV-004 | Inline | Inline nodes MUST exist only within \`Text\` objects. They MUST NOT appear as block nodes |
+| INV-005 | tabs | \`children\` of a \`tabs\` node MUST contain only \`tab_item\` nodes |
+| INV-006 | stepper | \`children\` of a \`stepper\` node MUST contain only \`step_item\` nodes |
+| INV-007 | tab_item | \`tab_item\` nodes MUST NOT appear outside a \`tabs\` node |
+| INV-008 | step_item | \`step_item\` nodes MUST NOT appear outside a \`stepper\` node |
+| INV-009 | figure | The \`media\` field of \`figure\` MUST be one of: \`image\`, \`video\`, \`canvas\` |
+| INV-010 | table | \`row\` nodes MUST NOT appear outside a \`table\` node. \`cell\` nodes MUST NOT appear outside a \`row\` node |
+| INV-011 | quiz | When \`input_type\` is \`"radio"\` or \`"checkbox"\`, the \`options\` and \`correct\` fields MUST be present |
+| INV-012 | quiz | When \`input_type\` is \`"text"\`, the \`correct_text\` field MUST be present |
+| INV-013 | anchor_link | The \`target_id\` of an \`anchor_link\` MUST reference a node \`id\` that exists within the same document |
+| INV-014 | assets | Every asset path referenced in \`content.json\` MUST have a corresponding entry in \`manifest.json\` under \`assets\` |
+| INV-015 | assets | Every entry in \`manifest.json\` under \`assets\` MUST correspond to a file present in the archive |
+| INV-016 | quiz | \`QuizOption.children\` MUST contain at most one \`Text\` element and at most one \`ImageLeaf\` element. A \`QuizOption\` with no children is invalid |
+| &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | | |
+
+---
+
+## 9. Versioning and Compatibility
+
+### 9.1 Version Identifier
+
+The format version is a string of the form \`MAJOR.MINOR\`, e.g. \`"1.0"\`.
+
+- A **MINOR** version increment indicates additive changes only: new optional fields, new node types, new inline types, new enum values. Backward compatibility is preserved.
+- A **MAJOR** version increment indicates breaking changes: removal of fields, rename of fields, change of semantics of existing node types.
+
+### 9.2 Backward Compatibility Contract
+
+A reader implementing version N.x MUST be able to process any document with version N.y where y ≤ x, subject to the following rules:
+
+1. Unknown fields on any node MUST be ignored.
+2. Unknown \`type\` values on block nodes MUST be treated as described in section 3.5.
+3. Unknown \`type\` values on inline nodes MUST be treated as an empty fragment.
+4. Unknown enum values (e.g., unknown \`callout_type\`, \`list_type\`) MUST be treated as the default value for that field where one exists, or ignored otherwise.
+
+### 9.3 Forward Compatibility
+
+A reader implementing version N SHOULD NOT attempt to process documents with version M where M > N without issuing a warning. The reader MAY attempt best-effort rendering while ignoring unknown constructs per the rules in 9.2.
+
+---
+
+## 10. Appendix A – Full Node Reference
+
+| Type | Class | Valid in root/children | Key Fields |
+|------|-------|-----------------------|------------|
+| \`container\` | Semantic Container | yes | \`children[]\` |
+| \`list\` | Semantic Container | yes | \`children[]\`, \`list_type\` |
+| \`accordion\` | Semantic Container | yes | \`label\`, \`children[]\` |
+| \`tabs\` | Semantic Container | yes | \`children: tab_item[]\` |
+| \`tab_item\` | Semantic Container | tabs only | \`label\`, \`children[]\` |
+| \`stepper\` | Semantic Container | yes | \`children: step_item[]\` |
+| \`step_item\` | Semantic Container | stepper only | \`label\`, \`children[]\` |
+| \`gallery\` | Semantic Container | yes | \`children[]\` |
+| \`callout\` | Semantic Container | yes | \`children[]\`, \`callout_type\` |
+| \`quote\` | Semantic Container | yes | \`children[]\` |
+| \`paragraph\` | Semantic Structure | yes | \`content: Text\` |
+| \`heading\` | Semantic Structure | yes | \`content: Text\`, \`level\` |
+| \`figure\` | Semantic Structure | yes | \`media\`, \`caption: Text\` |
+| \`table\` | Semantic Structure | yes | \`head\`, \`body\`, \`caption?\` |
+| \`row\` | Semantic Structure | table only | \`cells[]\` |
+| \`cell\` | Semantic Structure | row only | \`content: Text\`, \`is_header\` |
+| \`quiz\` | Semantic Structure | yes | \`question\`, \`options[]\`, \`input_type\`, \`correct\` |
+| \`divider\` | Semantic Structure | yes | – |
+| \`text\` | Content Carrier | field value only | \`inlines[]\` |
+| \`image\` | Content Carrier | container/field only | \`src\`, \`alt\` |
+| \`video\` | Content Carrier | container/field only | \`src_type\`, \`src\` |
+| \`code\` | Content Carrier | container/field only | \`language\`, \`code\` |
+| \`formula\` | Content Carrier | container/field only | \`latex\` |
+| \`canvas\` | Content Carrier | container/field only | \`width\`, \`height\`, \`src\` |
+| \`diagram\` | Content Carrier | container/field only | \`syntax\`, \`code\` |
+| \`span\` | Inline Terminal | text only | \`text\`, \`marks[]\` |
+| \`inline_code\` | Inline Terminal | text only | \`code\` |
+| \`inline_formula\` | Inline Terminal | text only | \`latex\` |
+| \`copy_snippet\` | Inline Terminal | text only | \`text\` |
+| \`link\` | Inline Wrapper | text only | \`href\`, \`content[]\` |
+| \`anchor_link\` | Inline Wrapper | text only | \`target_id\`, \`content[]\` |
+| \`spoiler\` | Inline Wrapper | text only | \`content[]\` |
+
+---
+
+## 11. Appendix B – Full Document Example
+
+The following example represents a partial guide on Python virtual environments. It demonstrates the use of all major node types defined in this specification.
+
+\`\`\`json
+{
+  "root": [
+    {
+      "id": "a1b2c3d4",
+      "type": "heading",
+      "level": 1,
+      "content": {
+        "type": "text",
+        "inlines": [
+          { "type": "span", "text": "Python Virtual Environments", "marks": [] }
+        ]
+      }
+    },
+    {
+      "id": "b2c3d4e5",
+      "type": "paragraph",
+      "content": {
+        "type": "text",
+        "inlines": [
+          { "type": "span", "text": "This guide covers creation and activation of ", "marks": [] },
+          { "type": "inline_code", "code": "venv" },
+          { "type": "span", "text": " environments.", "marks": [] }
+        ]
+      }
+    },
+    {
+      "id": "c3d4e5f6",
+      "type": "callout",
+      "callout_type": "info",
+      "children": [
+        {
+          "id": "d4e5f6g7",
+          "type": "paragraph",
+          "content": {
+            "type": "text",
+            "inlines": [
+              { "type": "span", "text": "Requires Python ", "marks": [] },
+              { "type": "inline_code", "code": "3.3+" },
+              { "type": "span", "text": ". Verify with ", "marks": [] },
+              { "type": "copy_snippet", "text": "python --version" },
+              { "type": "span", "text": ".", "marks": [] }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "e5f6g7h8",
+      "type": "tabs",
+      "children": [
+        {
+          "id": "f6g7h8i9",
+          "type": "tab_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Unix / macOS", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "g7h8i9j0",
+              "type": "container",
+              "children": [
+                {
+                  "id": "h8i9j0k1",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "source venv/bin/activate"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "i9j0k1l2",
+          "type": "tab_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Windows", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "j0k1l2m3",
+              "type": "container",
+              "children": [
+                {
+                  "id": "k1l2m3n4",
+                  "type": "code",
+                  "language": "bat",
+                  "code": "venv\\Scripts\\activate.bat"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "l2m3n4o5",
+      "type": "stepper",
+      "children": [
+        {
+          "id": "m3n4o5p6",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Create the environment", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "n4o5p6q7",
+              "type": "container",
+              "children": [
+                {
+                  "id": "o5p6q7r8",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "python -m venv venv"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "p6q7r8s9",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Activate the environment", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "q7r8s9t0",
+              "type": "paragraph",
+              "content": {
+                "type": "text",
+                "inlines": [
+                  { "type": "span", "text": "See the ", "marks": [] },
+                  {
+                    "type": "anchor_link",
+                    "target_id": "e5f6g7h8",
+                    "content": [{ "type": "span", "text": "activation tabs above", "marks": [] }]
+                  },
+                  { "type": "span", "text": ".", "marks": [] }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "r8s9t0u1",
+          "type": "step_item",
+          "label": {
+            "type": "text",
+            "inlines": [{ "type": "span", "text": "Install dependencies", "marks": [] }]
+          },
+          "children": [
+            {
+              "id": "s9t0u1v2",
+              "type": "container",
+              "children": [
+                {
+                  "id": "t0u1v2w3",
+                  "type": "code",
+                  "language": "bash",
+                  "code": "pip install -r requirements.txt"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1v2w3x4",
+      "type": "divider"
+    },
+    {
+      "id": "v2w3x4y5",
+      "type": "quiz",
+      "input_type": "radio",
+      "question": {
+        "children": [
+          {
+            "id": "w3x4y5z6",
+            "type": "paragraph",
+            "content": {
+              "type": "text",
+              "inlines": [
+                { "type": "span", "text": "Which command activates the environment on Unix?", "marks": [] }
+              ]
+            }
+          }
+        ]
+      },
+      "options": [
+        {
+          "id": "opt1",
+          "children": [
+            { "type": "text", "inlines": [{ "type": "inline_code", "code": "venv\\Scripts\\activate.bat" }] }
+          ]
+        },
+        {
+          "id": "opt2",
+          "children": [
+            { "type": "text", "inlines": [{ "type": "inline_code", "code": "source venv/bin/activate" }] }
+          ]
+        }
+      ],
+      "correct": ["opt2"]
+    },
+    {
+      "id": "x4y5z6a7",
+      "type": "accordion",
+      "label": {
+        "type": "text",
+        "inlines": [{ "type": "span", "text": "Common errors and solutions", "marks": [] }]
+      },
+      "children": [
+        {
+          "id": "y5z6a7b8",
+          "type": "callout",
+          "callout_type": "danger",
+          "children": [
+            {
+              "id": "z6a7b8c9",
+              "type": "paragraph",
+              "content": {
+                "type": "text",
+                "inlines": [
+                  { "type": "span", "text": "If you see ", "marks": [] },
+                  { "type": "inline_code", "code": "command not found: python" },
+                  { "type": "span", "text": ", try ", "marks": [] },
+                  { "type": "inline_code", "code": "python3" },
+                  { "type": "span", "text": " instead.", "marks": [] }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+\`\`\``;
+
+    // --------------------------------------------------------------
+    //  Логика переключения + определение языка браузера
+    // --------------------------------------------------------------
+    let currentLang = 'en';   // default
+
+    marked.setOptions({
+    highlight: function(code, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+            return hljs.highlight(code, { language: lang }).value;
+        }
+        return hljs.highlightAuto(code).value;
+    }
+});
+    // Функция рендеринга через marked (без смайликов, чисто)
+    function renderMarkdown() {
+        const rawMd = currentLang === 'ru' ? ruSpec : enSpec;
+        if (rawMd) {
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                headerIds: true,
+                mangle: false,
+                pedantic: false
+            });
+            const parsedHtml = marked.parse(rawMd);
+            document.getElementById('markdown-view').innerHTML = parsedHtml;
+
+            hljs.highlightAll();
+
+            // Добавляем плашку с языком и кнопку копирования для всех pre
+document.querySelectorAll('pre').forEach(block => {
+    // Находим язык из класса или из ближайшего code
+    const codeBlock = block.querySelector('code');
+    let lang = 'code';
+    if (codeBlock) {
+        const classes = codeBlock.className;
+        const match = classes.match(/language-(\w+)/);
+        if (match) lang = match[1];
+    }
+    
+    // Плашка с языком
+    const langSpan = document.createElement('span');
+    langSpan.className = 'code-lang';
+    langSpan.textContent = lang;
+    block.style.position = 'relative';
+    // block.appendChild(langSpan);
+    
+    // Кнопка копирования
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Копировать';
+    btn.onclick = () => {
+        const code = block.querySelector('code')?.innerText || block.innerText;
+        navigator.clipboard.writeText(code);
+        btn.textContent = 'Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = 'Копировать';
+            btn.classList.remove('copied');
+        }, 2000);
+    };
+    block.appendChild(btn);
+});
+        }
+        // обновить заголовок и версионную строку
+        const titleEl = document.getElementById('main-title');
+        if (titleEl) {
+            titleEl.textContent = currentLang === 'ru' ? 'Спецификация формата Doceo' : 'Doceo Format Specification';
+        }
+        // активная кнопка
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            const lang = btn.getAttribute('data-lang');
+            if (lang === currentLang) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        const footerNote = document.getElementById('footer-note');
+if (footerNote) {
+    footerNote.innerHTML = currentLang === 'ru' 
+        ? '&copy; Doceum, 2026. Все права защищены' 
+        : '&copy; Doceum, 2026. All rights reserved';
+}
+    }
+
+    function setLanguage(lang) {
+        if (lang === 'ru' || lang === 'en') {
+            currentLang = lang;
+            renderMarkdown();
+        }
+    }
+
+    // слушатели кнопок
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            if (lang) setLanguage(lang);
+        });
+    });
+
+    // автоопределение языка из браузера (первоначальный выбор)
+    const browserLang = navigator.language || navigator.userLanguage;
+    if (browserLang && browserLang.toLowerCase().startsWith('ru')) {
+        currentLang = 'ru';
+    } else {
+        currentLang = 'en';
+    }
+    renderMarkdown();
+</script>
+</body>
+</html>
