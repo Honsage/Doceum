@@ -1,0 +1,149 @@
+.container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 2rem var(--container-padding);
+    min-height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.resultsInfo {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    min-height: 1.5rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+    min-height: 300px;
+}
+
+.loadingSpinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-column: span 2;
+    padding: 3rem;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.empty {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--color-text-secondary);
+    grid-column: span 2;
+}
+
+.empty svg {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.emptyTitle {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-primary);
+}
+
+.emptyText {
+    font-size: 0.875rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.pageButton {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 0.75rem;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pageButton:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.pageButton.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.pageButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dots {
+    color: var(--color-text-secondary);
+    padding: 0 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .loadingSpinner {
+        grid-column: span 1;
+    }
+
+    .empty {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .pageButton {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 0.5rem;
+        font-size: 0.75rem;
+    }
+}
