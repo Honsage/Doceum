@@ -113,6 +113,7 @@ export const RegisterPage = observer(() => {
         const registerData = {
             email,
             password,
+            role,
             surname,
             name,
             patronymic: patronymic || undefined,

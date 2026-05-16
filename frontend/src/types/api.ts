@@ -20,6 +20,7 @@ export interface AuthResponse {
 export interface RegisterRequest {
     email: string;
     password: string;
+    role: 'READER' | 'AUTHOR';
     surname: string;
     name: string;
     patronymic?: string;
