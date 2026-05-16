@@ -47,6 +47,15 @@ public class JwtService {
         return UUID.fromString(subject);
     }
 
+    public String extractRole(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
