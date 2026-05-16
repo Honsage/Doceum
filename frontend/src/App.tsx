@@ -1,10 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
 import { MainLayout, AuthLayout } from '@components/layout';
+import { ProtectedRoute} from '@components/ProtectedRoute.tsx';
 import { HomePage } from '@pages/home/HomePage';
 import { LocalViewerPage } from '@pages/viewer/LocalViewerPage';
 import { LocalPreviewPage } from '@pages/viewer/LocalPreviewPage';
 import { LoginPage } from '@pages/auth/LoginPage';
 import { RegisterPage } from '@pages/auth/RegisterPage';
+import { ProfilePage } from '@pages/profile/ProfilePage';
 
 function App() {
     return (
@@ -13,6 +15,17 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/viewer/local" element={<LocalViewerPage />} />
                 <Route path="/viewer/local/preview" element={<LocalPreviewPage />} />
+
+                // Для любых аутентифицированных пользователей
+                <Route element={<ProtectedRoute />}>
+                    <Route path="/profile" element={<ProfilePage />} />
+                </Route>
+
+                // Для авторов
+                <Route element={<ProtectedRoute allowedRoles={['AUTHOR', 'ADMIN']} />}>
+                    <Route path="/editor" element={null/*<EditorPage />*/} />
+                    <Route path="/editor/:documentId" element={null/*<EditorPage />*/} />
+                </Route>
             </Route>
 
             <Route element={<AuthLayout />}>
