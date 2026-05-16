@@ -3,6 +3,7 @@ package ru.doceum.modules.auth.application.services;
 import ru.doceum.modules.auth.application.dto.*;
 import ru.doceum.modules.auth.application.usecases.*;
 import ru.doceum.modules.auth.domain.models.User;
+import ru.doceum.modules.auth.domain.models.UserRole;
 import ru.doceum.modules.auth.domain.repositories.UserRepository;
 import ru.doceum.modules.auth.domain.valueobjects.Email;
 import ru.doceum.modules.auth.domain.valueobjects.Password;
@@ -36,9 +37,17 @@ public class AuthApplicationService implements RegisterUseCase, LoginUseCase, Re
         String hashedPassword = passwordEncoder.encode(request.getPassword());
         Password password = new Password(hashedPassword);
 
+        UserRole role;
+        try {
+            role = UserRole.valueOf(request.getRole());
+        } catch (IllegalArgumentException e) {
+            role = UserRole.READER;
+        }
+
         User user = User.register(
                 email,
                 password,
+                role,
                 request.getSurname(),
                 request.getName(),
                 request.getPatronymic(),

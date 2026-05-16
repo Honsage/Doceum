@@ -36,14 +36,14 @@ public class User {
     }
 
     // Factory method для нового пользователя
-    public static User register(Email email, Password hashedPassword,
+    public static User register(Email email, Password hashedPassword, UserRole role,
                                 String surname, String name, String patronymic,
                                 String organization, String position) {
         return new User(
                 UUID.randomUUID(),
                 email,
                 hashedPassword,
-                UserRole.READER,
+                role,
                 surname,
                 name,
                 patronymic,
