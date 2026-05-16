@@ -8,6 +8,7 @@ import { LoginPage } from '@pages/auth/LoginPage';
 import { RegisterPage } from '@pages/auth/RegisterPage';
 import { ProfilePage } from '@pages/profile/ProfilePage';
 import { LibraryPage } from '@pages/library/LibraryPage';
+import { ViewerPage } from '@pages/viewer/ViewerPage';
 
 function App() {
     return (
@@ -21,6 +22,7 @@ function App() {
                 <Route element={<ProtectedRoute />}>
                     <Route path="/library" element={<LibraryPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/viewer/:id" element={<ViewerPage />} />
                 </Route>
 
                 // Для авторов
