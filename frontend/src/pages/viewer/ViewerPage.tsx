@@ -146,8 +146,8 @@ export const ViewerPage = () => {
             }
         } catch (err) {
             // Если ошибка — откатываем обратно
-            setIsFavorite(wasFavorite);
-            uiStore.showNotification('Ошибка', 'error');
+            // setIsFavorite(wasFavorite);
+            // uiStore.showNotification('Ошибка', 'error');
         } finally {
             setFavoriteLoading(false);
         }

@@ -21,3 +21,5 @@ pkg/
 
 # Temp and Test data
 backend/storage/
+coverage/
+
