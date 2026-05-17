@@ -17,13 +17,20 @@ class ApiError extends Error {
 }
 
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    if (!endpoint || endpoint.trim() === '') {
+        throw new ApiError(400, 'Invalid endpoint');
+    }
+
     const { requireAuth = false, ...fetchOptions } = options;
 
     const getHeaders = (token?: string): HeadersInit => {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
-            ...fetchOptions.headers,
         };
+
+        if (fetchOptions.headers) {
+            Object.assign(headers, fetchOptions.headers);
+        }
 
         if (requireAuth && token) {
             headers['Authorization'] = `Bearer ${token}`;
