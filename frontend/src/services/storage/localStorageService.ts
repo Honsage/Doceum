@@ -7,8 +7,18 @@ import type { User } from '@types/api';
 
 export const storageService = {
     // Access token
-    getAccessToken: (): string | null => localStorage.getItem(TOKEN_KEY),
-    setAccessToken: (token: string): void => localStorage.setItem(TOKEN_KEY, token),
+    setAccessToken: (token: string): void => {
+        if (token === null || token === undefined) {
+            localStorage.removeItem(TOKEN_KEY);
+            return;
+        }
+        localStorage.setItem(TOKEN_KEY, token);
+    },
+    getAccessToken: (): string | null => {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token === '' || token === null) return null;
+        return token;
+    },
 
     // Refresh token
     getRefreshToken: (): string | null => localStorage.getItem(REFRESH_KEY),
