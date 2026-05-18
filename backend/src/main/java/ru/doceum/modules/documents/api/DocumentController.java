@@ -2,7 +2,9 @@ package ru.doceum.modules.documents.api;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -99,5 +101,18 @@ public class DocumentController {
     public ResponseEntity<VerifyResponse> verify(@RequestParam("file") MultipartFile file) throws Exception {
         VerifyResponse response = documentService.verify(file.getBytes());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/draft/view")
+    public ResponseEntity<byte[]> viewDraft(
+            @PathVariable UUID id,
+            @RequestAttribute("userId") String userId) {
+
+        byte[] content = documentService.getDraftFileForPreview(id, UUID.fromString(userId));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + id + ".doceo\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(content);
     }
 }

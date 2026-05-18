@@ -262,4 +262,11 @@ public class DocumentApplicationService {
                 .map(this::toDocumentWithPublication)
                 .collect(Collectors.toList());
     }
+
+    public byte[] getDraftFileForPreview(UUID documentId, UUID userId) {
+        Document document = documentRepository.findByIdAndAuthorId(documentId, userId)
+                .orElseThrow(() -> new RuntimeException("Document not found or access denied"));
+
+        return fileStorageService.loadFile(document.getFilePath());
+    }
 }
