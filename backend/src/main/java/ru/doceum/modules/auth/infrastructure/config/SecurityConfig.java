@@ -16,6 +16,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import ru.doceum.modules.auth.infrastructure.security.JwtAuthenticationFilter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -25,7 +26,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${cors.allowed-origins:http://localhost:3000,http://127.0.0.1:3000}")
+    @Value("${cors.allowed-origins:http://127.0.0.1,http://localhost:80,http://localhost:3000,http://127.0.0.1:3000}")
     private String allowedOrigins;
 
     @Bean
@@ -54,13 +55,19 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(allowedOrigins.split(",")));
-
+        ArrayList<String> allowedList = new ArrayList<String>(List.of(allowedOrigins.split(",")));
+        allowedList.addAll(List.of(
+                "http://localhost:3000",
+                "http://localhost:80",
+                "http://localhost",
+                "http://127.0.0.1"
+        ));
+        configuration.setAllowedOrigins(allowedList);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Refresh-Token"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of("Authorization", "X-Refresh-Token"));
-        configuration.setMaxAge(3600L); // кэширование preflight запросов на 1 час
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
