@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CreateDocumentRequest {
+public class UpdateMetadataRequest {
+    @NotBlank
     private String title;
-
     private String description;
 }

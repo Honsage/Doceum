@@ -35,12 +35,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers("/api/hub/**").hasAnyRole("READER", "AUTHOR", "ADMIN")
-                        .requestMatchers("/api/documents/*/view").permitAll()
-                        .requestMatchers("/api/documents/verify").permitAll()
-                        .anyRequest().authenticated()
+//                        .requestMatchers("/api/auth/**").permitAll()
+//                        .requestMatchers("/api/public/**").permitAll()
+//                        .requestMatchers("/api/hub/**").hasAnyRole("READER", "AUTHOR", "ADMIN")
+//                        .requestMatchers("/api/documents/*/view").permitAll()
+//                        .requestMatchers("/api/documents/verify").permitAll()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

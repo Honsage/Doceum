@@ -63,26 +63,23 @@ public class DocumentApplicationService {
 
     @Transactional
     public void saveDraft(UUID documentId, UUID userId, MultipartFile file) throws IOException {
+        log.info("saveDraft: doc={}, user={}, size={}", documentId, userId, file.getSize());
+
         Document document = documentRepository.findByIdAndAuthorId(documentId, userId)
                 .orElseThrow(() -> new RuntimeException("Document not found or access denied"));
 
-        // Валидируем .doceo
-        doceoParser.validate(file.getBytes());
-
-        // Сохраняем файл (перезаписываем)
+        // Сохраняем файл напрямую
         String filePath = fileStorageService.saveDraft(userId, documentId, file.getBytes());
-        String contentSha256 = doceoParser.calculateContentSha256(file.getBytes());
 
-        // Обновляем документ (title и description пока не меняем, только файл)
-        // Для MVP title/description отдельно не редактируются отдельным эндпоинтом
         document.updateDraft(
                 document.getTitle(),
                 document.getDescription(),
                 filePath,
-                contentSha256
+                "draft_hash"
         );
 
         documentRepository.save(document);
+        log.info("Draft saved to: {}", filePath);
     }
 
     public byte[] getDraftFile(UUID documentId, UUID userId) {
@@ -186,6 +183,18 @@ public class DocumentApplicationService {
                 publishedAt,
                 document.getUpdatedAt().toString()
         );
+    }
+
+    @Transactional
+    public void updateMetadata(UUID documentId, UUID userId, UpdateMetadataRequest request) {
+        Document document = documentRepository.findByIdAndAuthorId(documentId, userId)
+                .orElseThrow(() -> new RuntimeException("Document not found or access denied"));
+
+        document.setTitle(request.getTitle());
+        document.setDescription(request.getDescription());
+        document.setUpdatedAt(Instant.now());
+
+        documentRepository.save(document);
     }
 
     public VerifyResponse verify(byte[] doceoContent) {
