@@ -18,12 +18,29 @@ export const MyDocumentsTab = () => {
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
 
+    // Загружаем оба списка при монтировании
     useEffect(() => {
-        loadData();
-    }, [tab]);
+        loadBothLists();
+    }, []);
+
+    const loadBothLists = async () => {
+        setLoading(true);
+        try {
+            const [draftsResponse, publishedResponse] = await Promise.all([
+                profileApi.getDrafts(50, 0),
+                profileApi.getPublished(50, 0)
+            ]);
+            setDrafts(draftsResponse.items);
+            setPublished(publishedResponse.items);
+        } catch (err) {
+            uiStore.showNotification('Ошибка загрузки документов', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const loadData = async () => {
-        setLoading(true);
+        // Обновляем только текущую вкладку (для обновления после удаления/снятия)
         try {
             if (tab === 'drafts') {
                 const response = await profileApi.getDrafts(50, 0);
@@ -34,8 +51,6 @@ export const MyDocumentsTab = () => {
             }
         } catch (err) {
             uiStore.showNotification('Ошибка загрузки документов', 'error');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -118,7 +133,7 @@ export const MyDocumentsTab = () => {
                     <FileText size={48} />
                     <p>Нет {tab === 'drafts' ? 'черновиков' : 'опубликованных документов'}</p>
                     {tab === 'drafts' && (
-                        <button onClick={createNewDocument} className={styles.link}>
+                        <button onClick={createNewDocument} className={styles.linkButton}>
                             Создать первый документ
                         </button>
                     )}
