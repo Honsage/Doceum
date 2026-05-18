@@ -29,7 +29,7 @@ export const Header = observer(() => {
                         <>
                             <Link to="/library" className={styles.navLink}>Библиотека</Link>
                             {isAuthor && (
-                                <Link to="/studio" className={styles.navLink}>Редактор</Link>
+                                <Link to="/editor" className={styles.navLink}>Редактор</Link>
                             )}
                             <Link to="/profile" className={styles.navLink}>Профиль</Link>
                             <button onClick={() => authStore.logout()} className={styles.navButton}>

@@ -1,0 +1,96 @@
+.container {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.toolbarButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+}
+
+.toolbarButton:hover {
+    background: var(--color-bg-primary);
+    color: var(--color-accent);
+}
+
+.toolbarButton.active {
+    background: var(--color-accent);
+    color: white;
+}
+
+.divider {
+    width: 1px;
+    height: 24px;
+    background: var(--color-border);
+    margin: 0 0.25rem;
+}
+
+.editor {
+    background: var(--color-bg-primary);
+}
+
+.editorContent {
+    padding: 1rem;
+    min-height: 100px;
+    outline: none;
+}
+
+.editorContent :global(p) {
+    margin: 0 0 0.75rem;
+    line-height: 1;
+}
+
+.editorContent :global(pre) {
+    background: var(--color-bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+}
+
+.editorContent :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    background: var(--color-bg-secondary);
+    padding: 0.125rem 0.25rem;
+    border-radius: 4px;
+}
+
+.emptyEditor :global(p)::before {
+    color: var(--color-text-secondary);
+    content: attr(data-placeholder);
+}
+
+.editorContent :global(.is-editor-empty)::before {
+    content: attr(data-placeholder);
+    color: var(--color-text-secondary);
+    float: left;
+    height: 0;
+    pointer-events: none;
+}
+
+.link {
+    color: var(--color-accent);
+    text-decoration: underline;
+    cursor: pointer;
+}

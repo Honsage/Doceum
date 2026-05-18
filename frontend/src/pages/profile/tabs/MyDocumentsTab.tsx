@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FileText, Eye, EyeOff, Trash2, Plus } from 'lucide-react';
 import { profileApi } from '@services/api/profile';
 import { documentsApi } from '@services/api/documents';
@@ -11,10 +11,12 @@ import styles from './MyDocumentsTab.module.css';
 type TabType = 'drafts' | 'published';
 
 export const MyDocumentsTab = () => {
+    const navigate = useNavigate();
     const [tab, setTab] = useState<TabType>('drafts');
     const [drafts, setDrafts] = useState<DraftItem[]>([]);
     const [published, setPublished] = useState<PublishedItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -34,6 +36,26 @@ export const MyDocumentsTab = () => {
             uiStore.showNotification('Ошибка загрузки документов', 'error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const createNewDocument = async () => {
+        setIsCreating(true);
+        uiStore.showLoader();
+
+        try {
+            const response = await documentsApi.create({
+                title: 'Новый документ',
+                description: '',
+            });
+
+            navigate(`/editor/${response.id}`);
+        } catch (err) {
+            console.error('Create error:', err);
+            uiStore.showNotification('Ошибка создания документа', 'error');
+        } finally {
+            setIsCreating(false);
+            uiStore.hideLoader();
         }
     };
 
@@ -79,10 +101,14 @@ export const MyDocumentsTab = () => {
                         Опубликованные ({published.length})
                     </button>
                 </div>
-                <Link to="/editor/new" className={styles.createButton}>
+                <button
+                    onClick={createNewDocument}
+                    disabled={isCreating}
+                    className={styles.createButton}
+                >
                     <Plus size={16} />
-                    Создать
-                </Link>
+                    {isCreating ? 'Создание...' : 'Создать'}
+                </button>
             </div>
 
             {loading && <div className={styles.loading}>Загрузка...</div>}
@@ -92,7 +118,9 @@ export const MyDocumentsTab = () => {
                     <FileText size={48} />
                     <p>Нет {tab === 'drafts' ? 'черновиков' : 'опубликованных документов'}</p>
                     {tab === 'drafts' && (
-                        <Link to="/editor/new" className={styles.link}>Создать первый документ</Link>
+                        <button onClick={createNewDocument} className={styles.link}>
+                            Создать первый документ
+                        </button>
                     )}
                 </div>
             )}

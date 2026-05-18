@@ -23,6 +23,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
     const { requireAuth = false, ...fetchOptions } = options;
 
+
     const getHeaders = (token?: string): HeadersInit => {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
@@ -51,6 +52,15 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
     if (requireAuth && !token) {
         throw new ApiError(401, 'No access token');
+    }
+
+    if (requireAuth) {
+        const token = localStorage.getItem('accessToken');
+        console.log('🔐 Token for request:', token ? `${token.substring(0, 30)}...` : '❌ NO TOKEN');
+        if (!token) {
+            throw new ApiError(401, 'No access token');
+        }
+        getHeaders(token);
     }
 
     let response = await makeRequest(token);

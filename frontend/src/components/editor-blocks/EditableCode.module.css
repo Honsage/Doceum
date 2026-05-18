@@ -1,0 +1,83 @@
+.container {
+    width: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.languageInput {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+.languageInput:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.tabSettings {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--color-bg-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+}
+
+.tabLabel {
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+    margin-right: 0.25rem;
+}
+
+.tabButton {
+    padding: 0.25rem 0.5rem;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--color-text-secondary);
+}
+
+.tabButton:hover {
+    background: var(--color-bg-primary);
+    border-color: var(--color-accent);
+}
+
+.tabButton.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.codeArea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.codeArea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}

@@ -1,0 +1,127 @@
+.container {
+    width: 100%;
+}
+
+.preview {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+}
+
+.removeButton {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.removeButton:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.captionWrapper {
+    margin-top: 0.5rem;
+}
+
+.captionInput {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: var(--color-bg-primary);
+    color: var(--color-text-secondary);
+    font-style: italic;
+    text-align: center;
+}
+
+.captionInput:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.dropzone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    border: 2px dashed var(--color-border);
+    border-radius: 12px;
+    background: var(--color-bg-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dropzone.dragging {
+    border-color: var(--color-accent);
+    background: var(--color-tip-bg);
+}
+
+.dropzone.uploading {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.fileInput {
+    display: none;
+}
+
+.content {
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+.content svg {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
+}
+
+.content p {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+}
+
+.hint {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.uploadingContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-secondary);
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

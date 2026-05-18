@@ -9,6 +9,7 @@ import { RegisterPage } from '@pages/auth/RegisterPage';
 import { ProfilePage } from '@pages/profile/ProfilePage';
 import { LibraryPage } from '@pages/library/LibraryPage';
 import { ViewerPage } from '@pages/viewer/ViewerPage';
+import { EditorPage } from '@pages/editor/EditorPage';
 
 function App() {
     return (
@@ -27,8 +28,8 @@ function App() {
 
                 // Для авторов
                 <Route element={<ProtectedRoute allowedRoles={['AUTHOR', 'ADMIN']} />}>
-                    <Route path="/editor" element={null/*<EditorPage />*/} />
-                    <Route path="/editor/:documentId" element={null/*<EditorPage />*/} />
+                    <Route path="/editor" element={<EditorPage />} />
+                    <Route path="/editor/:documentId" element={<EditorPage />} />
                 </Route>
             </Route>
 

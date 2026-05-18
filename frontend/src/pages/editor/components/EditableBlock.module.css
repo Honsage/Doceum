@@ -1,0 +1,95 @@
+.editableBlock {
+    position: relative;
+    margin: 0.5rem 0;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.editableBlock:hover {
+    border-color: var(--color-border);
+}
+
+.editableBlock.selected {
+    border-color: var(--color-accent);
+    background: var(--color-bg-secondary);
+}
+
+.toolbar {
+    position: absolute;
+    top: -28px;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.editableBlock:hover .toolbar {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dragHandle {
+    cursor: grab;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+}
+
+.blockType {
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    font-weight: 600;
+}
+
+.actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+}
+
+.actionButton:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-accent);
+}
+
+.actionButton.danger:hover {
+    background: var(--color-danger-bg);
+    color: var(--color-danger-border);
+}
+
+.dropIndicator {
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--color-accent);
+}
+
+.content {
+    padding: 0.5rem;
+}

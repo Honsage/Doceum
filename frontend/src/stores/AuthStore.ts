@@ -157,6 +157,8 @@ class AuthStore {
     }
 
     get isAuthor(): boolean {
+        const result = this.user?.role === 'AUTHOR' || this.user?.role === 'ADMIN';
+        console.log('🔐 isAuthor check:', this.user?.role, '→', result);
         return this.user?.role === 'AUTHOR' || this.user?.role === 'ADMIN';
     }
 

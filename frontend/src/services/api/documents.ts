@@ -2,7 +2,6 @@ import { request, API_BASE } from './client';
 import type { CreateDocumentRequest, CreateDocumentResponse, DocumentMetadata, VerifyResponse } from '@types/api';
 
 export const documentsApi = {
-    // Создать документ
     create: (data: CreateDocumentRequest): Promise<CreateDocumentResponse> =>
         request<CreateDocumentResponse>('/documents', {
             method: 'POST',
@@ -10,71 +9,79 @@ export const documentsApi = {
             requireAuth: true,
         }),
 
-    // Сохранить черновик (загрузить файл)
-    saveDraft: (documentId: string, file: File, token: string): Promise<Response> => {
+    saveDraft: async (documentId: string, file: File): Promise<boolean> => {
         const formData = new FormData();
         formData.append('file', file);
-        return fetch(`${API_BASE}/documents/${documentId}/draft`, {
+
+        const response = await fetch(`${API_BASE}/documents/${documentId}/draft`, {
             method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            },
             body: formData,
         });
+
+        return response.ok;
     },
 
-    // Скачать черновик
-    getDraft: (documentId: string, token: string): Promise<Blob> =>
-        fetch(`${API_BASE}/documents/${documentId}/draft`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-        }).then(res => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.blob();
-        }),
+    getDraft: async (documentId: string): Promise<Uint8Array> => {
+        const response = await fetch(`${API_BASE}/documents/${documentId}/draft`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            },
+        });
 
-    // Опубликовать
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        return new Uint8Array(await blob.arrayBuffer());
+    },
+
     publish: (documentId: string): Promise<void> =>
         request<void>(`/documents/${documentId}/publish`, {
             method: 'POST',
             requireAuth: true,
         }),
 
-    // Снять с публикации
     unpublish: (documentId: string): Promise<void> =>
         request<void>(`/documents/${documentId}/publish`, {
             method: 'DELETE',
             requireAuth: true,
         }),
 
-    // Удалить документ
     delete: (documentId: string): Promise<void> =>
         request<void>(`/documents/${documentId}/draft`, {
             method: 'DELETE',
             requireAuth: true,
         }),
 
-    // Просмотреть публикацию (без токена)
     view: (documentId: string): Promise<Blob> =>
         fetch(`${API_BASE}/documents/${documentId}/view`).then(res => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return res.blob();
         }),
 
-    // Метаданные (без токена, для публичных документов)
     getMetadata: (documentId: string): Promise<DocumentMetadata> =>
-        fetch(`${API_BASE}/documents/${documentId}/metadata`).then(res => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.json();
+        fetch(`${API_BASE}/documents/${documentId}/metadata`).then(res => res.json()),
+
+    getMetadataWithAuth: (documentId: string): Promise<DocumentMetadata> =>
+        request<DocumentMetadata>(`/documents/${documentId}/metadata`, {
+            method: 'GET',
+            requireAuth: true,
         }),
 
-    // Метаданные (с токеном, для автора)
-    getMetadataWithAuth: (documentId: string, token: string): Promise<DocumentMetadata> =>
-        fetch(`${API_BASE}/documents/${documentId}/metadata`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-        }).then(res => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        }),
+    updateMetadata: async (documentId: string, title: string, description: string): Promise<boolean> => {
+        const response = await fetch(`${API_BASE}/documents/${documentId}/metadata`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            },
+            body: JSON.stringify({ title, description }),
+        });
 
-    // Верифицировать документ
+        return response.ok;
+    },
+
     verify: (file: File): Promise<VerifyResponse> => {
         const formData = new FormData();
         formData.append('file', file);

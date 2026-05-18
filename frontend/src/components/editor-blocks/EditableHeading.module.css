@@ -1,0 +1,19 @@
+.heading {
+    margin: 0;
+}
+
+.input {
+    width: 100%;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    padding: 0;
+    outline: none;
+}
+
+.input:focus {
+    border-bottom: 1px dashed var(--color-accent);
+}

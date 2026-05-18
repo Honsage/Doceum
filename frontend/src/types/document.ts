@@ -81,6 +81,7 @@ export interface ImageBlock extends BaseBlock {
     type: 'image';
     src: string;
     alt: string;
+    caption?: string;
 }
 
 export interface VideoBlock extends BaseBlock {
