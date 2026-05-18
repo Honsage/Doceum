@@ -14,6 +14,9 @@ class EditorStore {
     isLoading: boolean = false;
     error: string | null = null;
 
+    // Хранилище медиафайлов (path -> content)
+    mediaFiles: Map<string, Uint8Array> = new Map();
+
     constructor() {
         makeAutoObservable(this);
     }
@@ -100,6 +103,7 @@ class EditorStore {
         this.rootBlockIds = [];
         this.selectedBlockId = null;
         this.error = null;
+        this.mediaFiles.clear();
     }
 
     get selectedBlock(): Block | null {
@@ -109,6 +113,26 @@ class EditorStore {
     get hasBlocks(): boolean {
         return this.rootBlockIds.length > 0;
     }
+
+    // === Медиафайлы ===
+
+    addMediaFile(path: string, content: Uint8Array) {
+        this.mediaFiles.set(path, content);
+    }
+
+    getMediaFile(path: string): Uint8Array | undefined {
+        return this.mediaFiles.get(path);
+    }
+
+    removeMediaFile(path: string) {
+        this.mediaFiles.delete(path);
+    }
+
+    clearMediaFiles() {
+        this.mediaFiles.clear();
+    }
+
+    // === Сериализация в .doceo ===
 
     async serializeToDoceo(): Promise<Uint8Array> {
         const buildTree = (blockId: string): any => {
@@ -131,26 +155,40 @@ class EditorStore {
         };
 
         const rootBlocks = this.rootBlockIds.map(id => buildTree(id)).filter(Boolean);
-
         const contentJson = { root: rootBlocks };
+
+        // Собираем assets из медиафайлов
+        const assets: { path: string; sha256: string }[] = [];
+
+        for (const [path, content] of this.mediaFiles.entries()) {
+            const hashBuffer = await crypto.subtle.digest('SHA-256', content);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            assets.push({ path, sha256: hashHex });
+        }
 
         const manifest = {
             version: '1.0',
             meta: {
                 id: this.documentId,
                 title: this.title,
-                author_id: localStorage.getItem('userId') || 'unknown',
+                author_id: authStore.user?.id || 'unknown',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             },
             content_filename: 'content.json',
-            assets: [],
+            assets: assets,
             content_sha256: '',
         };
 
         const zip = new JSZip();
         zip.file('manifest.json', JSON.stringify(manifest, null, 2));
         zip.file('content.json', JSON.stringify(contentJson, null, 2));
+
+        // Добавляем медиафайлы в ZIP
+        for (const [path, content] of this.mediaFiles.entries()) {
+            zip.file(path, content);
+        }
 
         return await zip.generateAsync({ type: 'uint8array' });
     }

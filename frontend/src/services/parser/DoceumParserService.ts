@@ -1,31 +1,6 @@
 import JSZip from 'jszip';
 import type { IDoceumParser, ParseResult, SerializeInput } from '@/types/parser';
 
-// Нормализация ключей: snake_case -> camelCase
-const toCamelCase = (str: string): string => {
-    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-};
-
-const normalizeKeys = (obj: any): any => {
-    if (obj === null || typeof obj !== 'object') return obj;
-
-    if (Array.isArray(obj)) {
-        return obj.map(item => normalizeKeys(item));
-    }
-
-    const result: Record<string, any> = {};
-    for (const [key, value] of Object.entries(obj)) {
-        // Пропускаем нормализацию для поля type
-        if (key === 'type') {
-            result[key] = value;
-        } else {
-            const camelKey = toCamelCase(key);
-            result[camelKey] = normalizeKeys(value);
-        }
-    }
-    return result;
-};
-
 class DoceumParserService implements IDoceumParser {
 
     async parse(bytes: Uint8Array): Promise<ParseResult> {
@@ -37,16 +12,14 @@ class DoceumParserService implements IDoceumParser {
                 return { ok: false, errors: ['Missing manifest.json'] };
             }
             const manifestText = await manifestFile.async('string');
-            const manifestRaw = JSON.parse(manifestText);
-            const manifest = normalizeKeys(manifestRaw);
+            const manifest = JSON.parse(manifestText);
 
             const contentFile = zip.file('content.json');
             if (!contentFile) {
                 return { ok: false, errors: ['Missing content.json'] };
             }
             const contentText = await contentFile.async('string');
-            const contentRaw = JSON.parse(contentText);
-            const content = normalizeKeys(contentRaw);
+            const content = JSON.parse(contentText);
 
             if (!content.root || !Array.isArray(content.root)) {
                 return { ok: false, errors: ['Invalid content.json: missing root array'] };
@@ -57,10 +30,10 @@ class DoceumParserService implements IDoceumParser {
                 manifest: {
                     id: manifest.meta?.id,
                     title: manifest.meta?.title,
-                    authorId: manifest.meta?.authorId,
-                    createdAt: manifest.meta?.createdAt,
-                    updatedAt: manifest.meta?.updatedAt,
-                    contentSha256: manifest.contentSha256 || '',
+                    authorId: manifest.meta?.author_id,
+                    createdAt: manifest.meta?.created_at,
+                    updatedAt: manifest.meta?.updated_at,
+                    contentSha256: manifest.content_sha256 || '',
                     hasSignature: !!manifest.signature,
                 },
                 content: {
@@ -82,6 +55,21 @@ class DoceumParserService implements IDoceumParser {
         } catch {
             return null;
         }
+    }
+
+    // Новый метод: извлекает все медиафайлы из ZIP
+    async extractAllMedia(bytes: Uint8Array): Promise<Map<string, Uint8Array>> {
+        const result = new Map<string, Uint8Array>();
+        const zip = await JSZip.loadAsync(bytes);
+
+        for (const [path, file] of Object.entries(zip.files)) {
+            if (path.startsWith('media/') && !file.dir) {
+                const content = await file.async('uint8array');
+                result.set(path, content);
+            }
+        }
+
+        return result;
     }
 
     async serialize(_input: SerializeInput): Promise<Uint8Array> {

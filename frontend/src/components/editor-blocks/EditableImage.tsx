@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Upload, X } from 'lucide-react';
 import type { ImageBlock } from '@types/document';
+import { editorStore } from '@stores/EditorStore';
 import styles from './EditableImage.module.css';
 
 interface EditableImageProps {
@@ -19,9 +20,23 @@ export const EditableImage = observer(({ block, onUpdate }: EditableImageProps) 
             alert('Пожалуйста, выберите изображение');
             return;
         }
+
         setIsUploading(true);
-        const localUrl = URL.createObjectURL(file);
-        onUpdate({ src: localUrl });
+
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+        const mediaPath = `media/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+
+        editorStore.addMediaFile(mediaPath, bytes);
+
+        // alt = описание изображения (пока имя файла, пользователь потом изменит в свойствах)
+        // caption = подпись под изображением (пустая, пользователь заполнит)
+        onUpdate({
+            src: mediaPath,
+            alt: file.name,      // временно имя файла, можно изменить в свойствах
+            caption: ''          // подпись пустая, пользователь заполнит отдельно
+        });
+
         setIsUploading(false);
     };
 
@@ -37,15 +52,29 @@ export const EditableImage = observer(({ block, onUpdate }: EditableImageProps) 
     };
 
     const handleClear = () => {
-        if (block.src && block.src.startsWith('blob:')) URL.revokeObjectURL(block.src);
+        if (block.src && block.src.startsWith('media/')) {
+            editorStore.removeMediaFile(block.src);
+        }
         onUpdate({ src: '', alt: '', caption: '' });
     };
 
+    // Получаем blob URL для отображения
+    const getImageUrl = () => {
+        if (!block.src) return '';
+        const mediaData = editorStore.getMediaFile(block.src);
+        if (mediaData) {
+            return URL.createObjectURL(new Blob([mediaData]));
+        }
+        return block.src;
+    };
+
     if (block.src) {
+        const imageUrl = getImageUrl();
+
         return (
             <div className={styles.container}>
                 <div className={styles.preview}>
-                    <img src={block.src} alt={block.alt} className={styles.image} />
+                    {imageUrl && <img src={imageUrl} alt={block.alt} className={styles.image} />}
                     <button onClick={handleClear} className={styles.removeButton}>
                         <X size={16} />
                     </button>
@@ -56,7 +85,7 @@ export const EditableImage = observer(({ block, onUpdate }: EditableImageProps) 
                         value={block.caption || ''}
                         onChange={(e) => onUpdate({ caption: e.target.value })}
                         className={styles.captionInput}
-                        placeholder="Подпись к изображению (caption)"
+                        placeholder="Подпись к изображению"
                     />
                 </div>
             </div>
