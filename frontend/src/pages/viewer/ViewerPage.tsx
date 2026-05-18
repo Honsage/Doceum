@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Download, Star } from 'lucide-react';
 import { documentsApi } from '@services/api/documents';
@@ -50,7 +50,20 @@ export const ViewerPage = () => {
         uiStore.showLoader();
 
         try {
-            const blob = await documentsApi.view(id);
+            const urlParams = new URLSearchParams(window.location.search);
+            const isPreview = urlParams.get('preview') === 'true';
+
+            let blob: Blob;
+
+            if (isPreview && isAuthenticated) {
+                // Автор смотрит свой черновик
+                const bytes = await documentsApi.getDraft(id);
+                blob = new Blob([bytes], { type: 'application/octet-stream' });
+            } else {
+                // Обычный просмотр публикации
+                blob = await documentsApi.view(id);
+            }
+
             const bytes = new Uint8Array(await blob.arrayBuffer());
             setDocumentBytes(bytes);
 
@@ -132,7 +145,6 @@ export const ViewerPage = () => {
 
         setFavoriteLoading(true);
 
-        // Оптимистичное обновление: меняем UI сразу
         const wasFavorite = isFavorite;
         setIsFavorite(!wasFavorite);
 
@@ -145,7 +157,7 @@ export const ViewerPage = () => {
                 uiStore.showNotification('Добавлено в избранное', 'success');
             }
         } catch (err) {
-            // Если ошибка — откатываем обратно
+            // Ошибка — откатываем обратно (раскомментировать при необходимости)
             // setIsFavorite(wasFavorite);
             // uiStore.showNotification('Ошибка', 'error');
         } finally {

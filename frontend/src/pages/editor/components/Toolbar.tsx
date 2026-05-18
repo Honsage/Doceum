@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Save, Eye, ArrowLeft, Sparkles } from 'lucide-react';
+import { Save, Eye, ArrowLeft, Sparkles, CheckCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { editorStore } from '@stores/EditorStore';
 import { uiStore } from '@stores/UiStore';
@@ -7,24 +8,69 @@ import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
     onSave: () => Promise<void>;
-    onPreview: () => void;
+    onPreview: () => Promise<void>;
     onPublish?: () => Promise<void>;
     isSaving?: boolean;
 }
 
 export const Toolbar = observer(({ onSave, onPreview, onPublish, isSaving }: ToolbarProps) => {
     const navigate = useNavigate();
+    const [saveFeedback, setSaveFeedback] = useState<'idle' | 'saving' | 'saved'>('idle');
+    const [publishFeedback, setPublishFeedback] = useState<'idle' | 'publishing' | 'published'>('idle');
+
+    // Сброс обратной связи через 2 секунды
+    useEffect(() => {
+        if (saveFeedback === 'saved') {
+            const timer = setTimeout(() => setSaveFeedback('idle'), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [saveFeedback]);
+
+    useEffect(() => {
+        if (publishFeedback === 'published') {
+            const timer = setTimeout(() => setPublishFeedback('idle'), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [publishFeedback]);
 
     const handleSave = async () => {
+        if (saveFeedback !== 'idle') return;
+
+        setSaveFeedback('saving');
         await onSave();
+        setSaveFeedback('saved');
     };
 
-    const handlePreview = () => {
-        onPreview();
+    const handlePreview = async () => {
+        if (saveFeedback === 'saving') {
+            uiStore.showNotification('Подождите, сохранение...', 'info');
+            return;
+        }
+        await onPreview();
+    };
+
+    const handlePublish = async () => {
+        if (publishFeedback !== 'idle') return;
+
+        setPublishFeedback('publishing');
+        await onPublish?.();
+        setPublishFeedback('published');
     };
 
     const handleBack = () => {
         navigate(-1);
+    };
+
+    const getSaveIcon = () => {
+        if (saveFeedback === 'saving') return <Loader2 size={18} className={styles.spinning} />;
+        if (saveFeedback === 'saved') return <CheckCircle size={18} />;
+        return <Save size={18} />;
+    };
+
+    const getPublishIcon = () => {
+        if (publishFeedback === 'publishing') return <Loader2 size={18} className={styles.spinning} />;
+        if (publishFeedback === 'published') return <CheckCircle size={18} />;
+        return <Sparkles size={18} />;
     };
 
     return (
@@ -51,14 +97,32 @@ export const Toolbar = observer(({ onSave, onPreview, onPublish, isSaving }: Too
                     <Eye size={18} />
                     <span>Предпросмотр</span>
                 </button>
-                <button onClick={handleSave} disabled={isSaving} className={`${styles.button} ${styles.primary}`}>
-                    <Save size={18} />
-                    <span>{isSaving ? 'Сохранение...' : 'Сохранить'}</span>
+
+                <button
+                    onClick={handleSave}
+                    disabled={saveFeedback !== 'idle'}
+                    className={`${styles.button} ${styles.primary} ${saveFeedback === 'saved' ? styles.success : ''}`}
+                >
+                    {getSaveIcon()}
+                    <span>
+                        {saveFeedback === 'saving' && 'Сохранение...'}
+                        {saveFeedback === 'saved' && 'Сохранено!'}
+                        {saveFeedback === 'idle' && 'Сохранить'}
+                    </span>
                 </button>
+
                 {onPublish && (
-                    <button onClick={onPublish} className={`${styles.button} ${styles.success}`}>
-                        <Sparkles size={18} />
-                        <span>Опубликовать</span>
+                    <button
+                        onClick={handlePublish}
+                        disabled={publishFeedback !== 'idle'}
+                        className={`${styles.button} ${styles.primary} ${publishFeedback === 'published' ? styles.success : ''}`}
+                    >
+                        {getPublishIcon()}
+                        <span>
+                            {publishFeedback === 'publishing' && 'Публикация...'}
+                            {publishFeedback === 'published' && 'Опубликовано!'}
+                            {publishFeedback === 'idle' && 'Опубликовать'}
+                        </span>
                     </button>
                 )}
             </div>

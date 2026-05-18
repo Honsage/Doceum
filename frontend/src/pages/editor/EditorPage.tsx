@@ -10,6 +10,7 @@ import { EditableHeading } from '@components/editor-blocks/EditableHeading';
 import { EditableCode } from '@components/editor-blocks/EditableCode';
 import { EditableImage } from '@components/editor-blocks/EditableImage';
 import { editorStore } from '@stores/EditorStore';
+import { authStore } from '@stores/AuthStore';
 import { uiStore } from '@stores/UiStore';
 import { documentsApi } from '@services/api/documents';
 import { doceumParser } from '@services/parser';
@@ -39,10 +40,16 @@ export const EditorPage = observer(() => {
             editorStore.description = metadata.description;
             editorStore.documentId = id;
 
-            // getDraft возвращает Uint8Array, не нужно вызывать .arrayBuffer()
             const bytes = await documentsApi.getDraft(id);
-
             const parseResult = await doceumParser.parse(bytes);
+
+            // Восстанавливаем медиафайлы из ZIP
+            if (parseResult.ok) {
+                const mediaFiles = await doceumParser.extractAllMedia(bytes);
+                for (const [path, content] of mediaFiles) {
+                    editorStore.addMediaFile(path, content);
+                }
+            }
 
             if (parseResult.ok && parseResult.content) {
                 const blocks: any[] = [];
@@ -66,7 +73,6 @@ export const EditorPage = observer(() => {
             } else {
                 editorStore.setDocument(id, metadata.title, metadata.description, [], []);
             }
-
         } catch (err) {
             console.error('Load error:', err);
             uiStore.showNotification('Ошибка загрузки документа', 'error');
@@ -89,13 +95,11 @@ export const EditorPage = observer(() => {
         uiStore.showLoader();
 
         try {
-            // 1. Обновляем метаданные
             const metadataSuccess = await documentsApi.updateMetadata(docId, editorStore.title, editorStore.description);
             if (!metadataSuccess) {
                 throw new Error('Ошибка обновления метаданных');
             }
 
-            // 2. Сохраняем черновик
             const doceoBytes = await editorStore.serializeToDoceo();
             const blob = new Blob([doceoBytes], { type: 'application/octet-stream' });
             const file = new File([blob], `${docId}.doceo`, { type: 'application/octet-stream' });
@@ -116,13 +120,24 @@ export const EditorPage = observer(() => {
         }
     };
 
-    const handlePreview = () => {
+    const handlePreview = async () => {
         const docId = editorStore.documentId;
         if (!docId) {
             uiStore.showNotification('Сначала сохраните документ', 'warning');
             return;
         }
-        window.open(`/viewer/${docId}?preview=true`, '_blank');
+
+        uiStore.showLoader();
+
+        try {
+            await handleSave();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            window.open(`/viewer/${docId}?preview=true`, '_blank');
+        } catch (err) {
+            uiStore.showNotification('Ошибка перед просмотром', 'error');
+        } finally {
+            uiStore.hideLoader();
+        }
     };
 
     const handlePublish = async () => {

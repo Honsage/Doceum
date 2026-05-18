@@ -60,6 +60,16 @@ export const documentsApi = {
             return res.blob();
         }),
 
+    viewDraft: (documentId: string): Promise<Blob> =>
+        fetch(`${API_BASE}/documents/${documentId}/draft/view`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            },
+        }).then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.blob();
+        }),
+
     getMetadata: (documentId: string): Promise<DocumentMetadata> =>
         fetch(`${API_BASE}/documents/${documentId}/metadata`).then(res => res.json()),
 

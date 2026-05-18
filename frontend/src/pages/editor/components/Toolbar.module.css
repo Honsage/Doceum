@@ -86,6 +86,29 @@
     border-color: var(--color-accent);
 }
 
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.button.success {
+    background: #5E9A8C;
+    border-color: #5E9A8C;
+}
+
+.button.published {
+    background: #2d6a4f;
+    border-color: #2d6a4f;
+}
+
 @media (max-width: 640px) {
     .toolbar {
         flex-direction: column;
