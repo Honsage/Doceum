@@ -10,12 +10,15 @@ import { ProfilePage } from '@pages/profile/ProfilePage';
 import { LibraryPage } from '@pages/library/LibraryPage';
 import { ViewerPage } from '@pages/viewer/ViewerPage';
 import { EditorPage } from '@pages/editor/EditorPage';
+import { NotFoundPage } from '@pages/not-found/NotFoundPage';
+import { AboutPage } from '@pages/about/AboutPage';
 
 function App() {
     return (
         <Routes>
             <Route element={<MainLayout />}>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
                 <Route path="/viewer/local" element={<LocalViewerPage />} />
                 <Route path="/viewer/local/preview" element={<LocalPreviewPage />} />
 
@@ -37,6 +40,9 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
             </Route>
+
+            // 404
+            <Route path="*" element={<NotFoundPage />} />
         </Routes>
     );
 }
