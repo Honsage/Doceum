@@ -7,7 +7,7 @@ RUN npm ci
 
 COPY . .
 
-RUN npx vite build
+RUN npm run build
 
 FROM nginx:alpine
 
@@ -17,4 +17,3 @@ COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
-
