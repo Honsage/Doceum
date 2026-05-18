@@ -1,13 +1,270 @@
+.home {
+    background: var(--color-bg-primary);
+}
+
+.container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+}
+
+/* Hero секция */
 .hero {
+    padding: 4rem 0;
     text-align: center;
+    background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-bottom: 2rem;
+}
+
+.logoMark {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    background: var(--color-bg-secondary);
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+}
+
+.logoText {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+}
+
+.highlight {
+    color: var(--color-accent);
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.buttonPrimary, .buttonSecondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.buttonPrimary {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+}
+
+.buttonPrimary:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.buttonSecondary {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.buttonSecondary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* Секция возможностей */
+.features {
     padding: 4rem 0;
 }
 
-.hero h1 {
-    font-size: 3rem;
+.sectionTitle {
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.featuresGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.featureCard {
+    padding: 1.5rem;
+    background: var(--color-bg-secondary);
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    transition: all 0.2s;
+}
+
+.featureCard:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+}
+
+.featureIcon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-primary);
+    border-radius: 12px;
     margin-bottom: 1rem;
-    background: linear-gradient(135deg, var(--color-text-primary), var(--color-accent));
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    color: var(--color-accent);
+}
+
+.featureCard h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.featureCard p {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+}
+
+/* Демо секция */
+.demo {
+    padding: 4rem 0;
+    background: var(--color-bg-secondary);
+}
+
+.demoCard {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--color-bg-primary);
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+}
+
+.demoHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.demoTitle {
+    font-weight: 500;
+}
+
+.demoBadge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--color-accent);
+    color: white;
+    border-radius: 4px;
+}
+
+.demoContent {
+    padding: 1.5rem;
+}
+
+.demoTabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.demoTab, .demoTabActive {
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+}
+
+.demoTabActive {
+    color: var(--color-accent);
+    border-bottom: 2px solid var(--color-accent);
+}
+
+.demoCode {
+    background: var(--color-bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    overflow-x: auto;
+    margin: 0;
+}
+
+.demoFooter {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--color-border);
+    text-align: right;
+}
+
+.demoLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.demoLink:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 2rem;
+    }
+
+    .featuresGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .hero {
+        padding: 2rem 0;
+    }
+
+    .features, .demo {
+        padding: 2rem 0;
+    }
 }
