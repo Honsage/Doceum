@@ -104,7 +104,7 @@
 .pageButton.active {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    color: white;
+    color: var(--color-bg-primary)  ;
 }
 
 .pageButton:disabled {

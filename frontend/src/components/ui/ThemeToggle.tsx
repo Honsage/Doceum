@@ -6,8 +6,14 @@ import styles from './ThemeToggle.module.css';
 export const ThemeToggle = observer(() => {
     const { theme, toggleTheme } = uiStore;
 
+    console.log('ThemeToggle render, theme:', theme);
+
     return (
-        <button onClick={toggleTheme} className={styles.toggle} aria-label="Переключить тему">
+        <button
+            onClick={toggleTheme}
+            className={styles.toggle}
+            aria-label="Переключить тему"
+        >
             {theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
     );

@@ -28,7 +28,7 @@
 .toggleButton.active {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    color: white;
+    color: var(--color-bg-primary);
 }
 
 .searchWrapper {
@@ -92,7 +92,7 @@
     font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 500;
-    color: white;
+    color: var(--color-bg-primary);
     cursor: pointer;
     transition: opacity 0.2s;
 }

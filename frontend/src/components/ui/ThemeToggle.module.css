@@ -9,10 +9,12 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
+    color: var(--color-header-text);
 }
 
 .toggle:hover {
-    background: var(--color-bg-secondary);
+    background: var(--color-header-text);
+    color: var(--color-header-bg);
 }
 
 .icon {

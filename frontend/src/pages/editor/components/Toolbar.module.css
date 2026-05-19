@@ -42,7 +42,7 @@
 .button.primary {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    color: white;
+    color: var(--color-bg-primary);
 }
 
 .button.primary:hover {
@@ -52,7 +52,7 @@
 .button.success {
     background: var(--color-tip-border);
     border-color: var(--color-tip-border);
-    color: white;
+    color: var(--color-bg-primary);
 }
 
 .button:disabled {

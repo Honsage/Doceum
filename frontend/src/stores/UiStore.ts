@@ -20,7 +20,7 @@ class UiStore {
             this.theme = savedTheme;
             this.applyTheme(savedTheme);
         } else {
-            const prefersDark = false;
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             const defaultTheme = prefersDark ? 'dark' : 'light';
             this.theme = defaultTheme;
             this.applyTheme(defaultTheme);
@@ -37,12 +37,14 @@ class UiStore {
         this.applyTheme(theme);
     }
 
-    toggleTheme(): void {
+    // Используем стрелочную функцию для сохранения контекста
+    toggleTheme = (): void => {
+        console.log('toggleTheme called, current theme:', this.theme);
         const newTheme = this.theme === 'light' ? 'dark' : 'light';
         this.setTheme(newTheme);
-    }
+        console.log('Theme toggled to:', newTheme);
+    };
 
-    // Глобальный лоадер (с поддержкой вложенных вызовов)
     showLoader(): void {
         this.loadingCount++;
         this.isLoading = true;
@@ -56,11 +58,8 @@ class UiStore {
         }
     }
 
-    // Уведомления
     showNotification(message: string, type: UiStore['notification']['type'] = 'info'): void {
         this.notification = { message, type };
-
-        // Автоматически скрываем через 5 секунд
         setTimeout(() => {
             if (this.notification?.message === message) {
                 this.notification = null;

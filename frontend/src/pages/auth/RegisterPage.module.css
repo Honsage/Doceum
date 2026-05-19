@@ -68,13 +68,13 @@
 .step.active .stepNumber {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    color: white;
+    color: var(--color-bg-primary);
 }
 
 .step.completed .stepNumber {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    color: white;
+    color: var(--color-bg-primary);
 }
 
 .stepLabel {
@@ -227,7 +227,7 @@
 .nextButton {
     background: var(--color-accent);
     border: none;
-    color: white;
+    color: var(--color-bg-primary);
     margin-left: auto;
 }
 
