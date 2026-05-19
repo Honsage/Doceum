@@ -16,6 +16,10 @@
 
 ---
 
+[Readme на русском](./docs/README.RU.md)
+
+---
+
 ## About the Project
 
 **Doceum** (from Latin *doceo* – I teach, I instruct) is a platform for creating, publishing and distributing **interactive documents** as standalone digital artifacts.
