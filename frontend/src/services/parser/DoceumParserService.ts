@@ -3,6 +3,31 @@ import type { IDoceumParser, ParseResult, SerializeInput } from '@/types/parser'
 
 class DoceumParserService implements IDoceumParser {
 
+    // Нормализация snake_case to camelCase
+    private toCamelCase(str: string): string {
+        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    }
+
+    private normalizeKeys(obj: any): any {
+        if (obj === null || typeof obj !== 'object') return obj;
+
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.normalizeKeys(item));
+        }
+
+        const result: Record<string, any> = {};
+        for (const [key, value] of Object.entries(obj)) {
+            // Поле type не трогаем
+            if (key === 'type') {
+                result[key] = value;
+            } else {
+                const camelKey = this.toCamelCase(key);
+                result[camelKey] = this.normalizeKeys(value);
+            }
+        }
+        return result;
+    }
+
     async parse(bytes: Uint8Array): Promise<ParseResult> {
         try {
             const zip = await JSZip.loadAsync(bytes);
@@ -12,14 +37,16 @@ class DoceumParserService implements IDoceumParser {
                 return { ok: false, errors: ['Missing manifest.json'] };
             }
             const manifestText = await manifestFile.async('string');
-            const manifest = JSON.parse(manifestText);
+            const manifestRaw = JSON.parse(manifestText);
+            const manifest = this.normalizeKeys(manifestRaw);
 
             const contentFile = zip.file('content.json');
             if (!contentFile) {
                 return { ok: false, errors: ['Missing content.json'] };
             }
             const contentText = await contentFile.async('string');
-            const content = JSON.parse(contentText);
+            const contentRaw = JSON.parse(contentText);
+            const content = this.normalizeKeys(contentRaw);
 
             if (!content.root || !Array.isArray(content.root)) {
                 return { ok: false, errors: ['Invalid content.json: missing root array'] };
@@ -30,10 +57,10 @@ class DoceumParserService implements IDoceumParser {
                 manifest: {
                     id: manifest.meta?.id,
                     title: manifest.meta?.title,
-                    authorId: manifest.meta?.author_id,
-                    createdAt: manifest.meta?.created_at,
-                    updatedAt: manifest.meta?.updated_at,
-                    contentSha256: manifest.content_sha256 || '',
+                    authorId: manifest.meta?.authorId,
+                    createdAt: manifest.meta?.createdAt,
+                    updatedAt: manifest.meta?.updatedAt,
+                    contentSha256: manifest.contentSha256 || '',
                     hasSignature: !!manifest.signature,
                 },
                 content: {
@@ -57,7 +84,6 @@ class DoceumParserService implements IDoceumParser {
         }
     }
 
-    // Новый метод: извлекает все медиафайлы из ZIP
     async extractAllMedia(bytes: Uint8Array): Promise<Map<string, Uint8Array>> {
         const result = new Map<string, Uint8Array>();
         const zip = await JSZip.loadAsync(bytes);
