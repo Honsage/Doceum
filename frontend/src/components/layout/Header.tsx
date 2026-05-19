@@ -28,9 +28,6 @@ export const Header = observer(() => {
                     {isAuthenticated ? (
                         <>
                             <Link to="/library" className={styles.navLink}>Библиотека</Link>
-                            {isAuthor && (
-                                <Link to="/editor" className={styles.navLink}>Редактор</Link>
-                            )}
                             <Link to="/profile" className={styles.navLink}>Профиль</Link>
                             <button onClick={() => authStore.logout()} className={styles.navButton}>
                                 Выйти
