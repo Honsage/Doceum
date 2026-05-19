@@ -55,13 +55,16 @@ services:
       - doceum-network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
     container_name: doceum-frontend
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /opt/certbot/conf:/etc/letsencrypt:ro   # <- Сертификаты с хоста
+      - /opt/certbot/conf:/etc/letsencrypt:ro
     depends_on:
       - backend
     restart: unless-stopped
