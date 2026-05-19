@@ -20,7 +20,7 @@ class UiStore {
             this.theme = savedTheme;
             this.applyTheme(savedTheme);
         } else {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const prefersDark = false;
             const defaultTheme = prefersDark ? 'dark' : 'light';
             this.theme = defaultTheme;
             this.applyTheme(defaultTheme);
