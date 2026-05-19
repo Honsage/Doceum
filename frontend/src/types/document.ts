@@ -80,7 +80,7 @@ export interface CodeBlock extends BaseBlock {
 export interface ImageBlock extends BaseBlock {
     type: 'image';
     src: string;
-    alt: string;
+    alt?: string;
     caption?: string;
 }
 

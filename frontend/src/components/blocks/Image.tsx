@@ -12,7 +12,7 @@ export const Image = ({ block, getMediaUrl }: ImageProps) => {
     return (
         <figure className={styles.figure}>
             <img src={src} alt={block.alt} className={styles.image} />
-            {block.alt && <figcaption className={styles.caption}>{block.alt}</figcaption>}
+            {block.caption && <figcaption className={styles.caption}>{block.caption}</figcaption>}
         </figure>
     );
 };
