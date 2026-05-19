@@ -32,7 +32,7 @@ export const LoginPage = observer(() => {
             navigate('/');
             uiStore.showNotification('Добро пожаловать!', 'success');
         } else {
-            setError(authStore.error || 'Неверный email или пароль');
+            setError('Неверный email или пароль');
         }
     };
 
