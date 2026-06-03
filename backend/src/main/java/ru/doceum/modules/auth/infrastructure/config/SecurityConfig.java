@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers("/api/hub/**").hasAnyRole("READER", "AUTHOR", "ADMIN")
+                        .requestMatchers("/api/hub/**").permitAll()
                         .requestMatchers("/api/documents/*/view").permitAll()
                         .requestMatchers("/api/documents/verify").permitAll()
                         .anyRequest().authenticated()

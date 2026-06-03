@@ -21,12 +21,12 @@ function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/viewer/local" element={<LocalViewerPage />} />
                 <Route path="/viewer/local/preview" element={<LocalPreviewPage />} />
+                <Route path="/viewer/:id" element={<ViewerPage />} />
+                <Route path="/library" element={<LibraryPage />} />
 
                 // Для любых аутентифицированных пользователей
                 <Route element={<ProtectedRoute />}>
-                    <Route path="/library" element={<LibraryPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/viewer/:id" element={<ViewerPage />} />
                 </Route>
 
                 // Для авторов

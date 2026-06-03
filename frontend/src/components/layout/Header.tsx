@@ -24,10 +24,10 @@ export const Header = observer(() => {
                 {/* Навигация */}
                 <nav className={styles.nav}>
                     <Link to="/viewer/local" className={styles.navLink}>Просмотр</Link>
+                    <Link to="/library" className={styles.navLink}>Библиотека</Link>
 
                     {isAuthenticated ? (
                         <>
-                            <Link to="/library" className={styles.navLink}>Библиотека</Link>
                             <Link to="/profile" className={styles.navLink}>Профиль</Link>
                             <button onClick={() => authStore.logout()} className={styles.navButton}>
                                 Выйти
