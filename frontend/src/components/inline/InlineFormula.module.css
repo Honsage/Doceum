@@ -1,0 +1,12 @@
+.inlineFormula {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.error {
+    color: var(--color-danger-border);
+    background: var(--color-danger-bg);
+    padding: 0.125rem 0.25rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}

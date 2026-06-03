@@ -1,10 +1,11 @@
 import type { InlineNode } from '@types/document';
 import { CopySnippet } from './CopySnippet';
 import { Spoiler } from './Spoiler';
+import { InlineFormula } from './InlineFormula';
 import styles from './InlineRenderer.module.css';
 
 interface InlineRendererProps {
-    nodes?: InlineNode[];  // ← делаем опциональным
+    nodes?: InlineNode[];
     onAnchorClick?: (targetId: string) => void;
 }
 
@@ -30,6 +31,9 @@ export const InlineRenderer = ({ nodes, onAnchorClick }: InlineRendererProps) =>
 
                     case 'inline_code':
                         return <code key={idx} className={styles.inlineCode}>{node.code}</code>;
+
+                    case 'inline_formula':
+                        return <InlineFormula key={idx} latex={node.latex} />;
 
                     case 'copy_snippet':
                         return <CopySnippet key={idx} text={node.text} />;
