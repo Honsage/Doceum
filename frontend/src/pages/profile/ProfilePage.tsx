@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { authStore } from '@stores/AuthStore';
 import { User, Star, FileText } from 'lucide-react';
@@ -10,8 +11,34 @@ import styles from './ProfilePage.module.css';
 type Tab = 'personal' | 'favorites' | 'documents';
 
 export const ProfilePage = observer(() => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const { isAuthor } = authStore;
-    const [activeTab, setActiveTab] = useState<Tab>('personal');
+
+    const getTabFromUrl = (): Tab => {
+        const params = new URLSearchParams(location.search);
+        const tabParam = params.get('tab');
+        if (tabParam === 'personal' || tabParam === 'favorites' || tabParam === 'documents') {
+            return tabParam;
+        }
+        return 'personal';
+    };
+
+    const [activeTab, setActiveTab] = useState<Tab>(getTabFromUrl());
+
+    // Обновляем URL при изменении вкладки
+    const handleTabChange = (tab: Tab) => {
+        setActiveTab(tab);
+        navigate(`/profile?tab=${tab}`, { replace: true });
+    };
+
+    // При изменении URL (например, при переходе по ссылке) синхронизируем состояние
+    useEffect(() => {
+        const tabFromUrl = getTabFromUrl();
+        if (tabFromUrl !== activeTab) {
+            setActiveTab(tabFromUrl);
+        }
+    }, [location.search]);
 
     const tabs = [
         { id: 'personal' as Tab, label: 'Личные данные', icon: User, show: true },
@@ -28,7 +55,7 @@ export const ProfilePage = observer(() => {
                     <button
                         key={tab.id}
                         className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => handleTabChange(tab.id)}
                     >
                         <tab.icon size={16} />
                         <span>{tab.label}</span>
