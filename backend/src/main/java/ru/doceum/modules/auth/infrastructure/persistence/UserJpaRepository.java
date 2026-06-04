@@ -11,9 +11,8 @@ import java.util.UUID;
 public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
     Optional<UserEntity> findByEmail(String email);
     @Query("SELECT u FROM UserEntity u WHERE " +
-            "LOWER(u.surname) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-            "LOWER(u.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-            "LOWER(u.patronymic) LIKE LOWER(CONCAT('%', :query, '%'))")
+            "LOWER(CONCAT(u.surname, ' ', u.name, COALESCE(CONCAT(' ', u.patronymic), ''))) " +
+            "LIKE LOWER(CONCAT('%', :query, '%'))")
     List<UserEntity> findByFullNameContaining(@Param("query") String query);
     boolean existsByEmail(String email);
 }
