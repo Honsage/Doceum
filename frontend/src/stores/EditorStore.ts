@@ -13,8 +13,6 @@ class EditorStore {
     selectedBlockId: string | null = null;
     isLoading: boolean = false;
     error: string | null = null;
-
-    // Хранилище медиафайлов (path -> content)
     mediaFiles: Map<string, Uint8Array> = new Map();
 
     constructor() {
@@ -50,8 +48,37 @@ class EditorStore {
             const parent = this.blocks.get(parentId);
             if (parent) {
                 const children = parent.children || [];
-                parent.children = [...children, block];
+                parent.children = [...children, block.id];
+                this.blocks.set(parentId, parent);
             }
+        }
+    }
+
+    addChildBlock(parentId: string, childType: string): void {
+        const parent = this.blocks.get(parentId);
+        if (!parent) return;
+
+        const newBlock = this.createBlockByType(childType);
+        if (!newBlock) return;
+
+        this.blocks.set(newBlock.id, newBlock);
+
+        const children = parent.children || [];
+        parent.children = [...children, newBlock.id];
+        this.blocks.set(parentId, parent);
+    }
+
+    private createBlockByType(type: string): Block | null {
+        const id = uuidv4();
+        switch (type) {
+            case 'paragraph':
+                return {
+                    id,
+                    type: 'paragraph',
+                    content: { type: 'text', inlines: [{ type: 'span', text: '', marks: [] }] },
+                } as Block;
+            default:
+                return null;
         }
     }
 
@@ -67,7 +94,7 @@ class EditorStore {
         this.rootBlockIds = this.rootBlockIds.filter(id => id !== blockId);
         this.blocks.forEach(block => {
             if (block.children) {
-                block.children = block.children.filter(child => child.id !== blockId);
+                block.children = block.children.filter((childId: string) => childId !== blockId);
             }
         });
         this.blocks.delete(blockId);
@@ -114,8 +141,6 @@ class EditorStore {
         return this.rootBlockIds.length > 0;
     }
 
-    // === Медиафайлы ===
-
     addMediaFile(path: string, content: Uint8Array) {
         this.mediaFiles.set(path, content);
     }
@@ -132,8 +157,6 @@ class EditorStore {
         this.mediaFiles.clear();
     }
 
-    // === Сериализация в .doceo ===
-
     async serializeToDoceo(): Promise<Uint8Array> {
         const buildTree = (blockId: string): any => {
             const block = this.blocks.get(blockId);
@@ -147,8 +170,8 @@ class EditorStore {
                 }
             });
 
-            if ((block as any).children && (block as any).children.length > 0) {
-                result.children = (block as any).children.map((child: any) => buildTree(child.id));
+            if (block.children && block.children.length > 0) {
+                result.children = block.children.map((childId: string) => buildTree(childId));
             }
 
             return result;
@@ -157,7 +180,6 @@ class EditorStore {
         const rootBlocks = this.rootBlockIds.map(id => buildTree(id)).filter(Boolean);
         const contentJson = { root: rootBlocks };
 
-        // Собираем assets из медиафайлов
         const assets: { path: string; sha256: string }[] = [];
 
         for (const [path, content] of this.mediaFiles.entries()) {
@@ -185,7 +207,6 @@ class EditorStore {
         zip.file('manifest.json', JSON.stringify(manifest, null, 2));
         zip.file('content.json', JSON.stringify(contentJson, null, 2));
 
-        // Добавляем медиафайлы в ZIP
         for (const [path, content] of this.mediaFiles.entries()) {
             zip.file(path, content);
         }

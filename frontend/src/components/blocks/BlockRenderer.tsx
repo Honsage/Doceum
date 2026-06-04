@@ -14,7 +14,7 @@ import { Divider } from './Divider';
 import { Quiz } from './Quiz';
 import { Table } from './Table';
 import { Formula } from './Formula';
-import { Container } from './Container';  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+import { Container } from './Container';
 import styles from './BlockRenderer.module.css';
 
 interface BlockRendererProps {
