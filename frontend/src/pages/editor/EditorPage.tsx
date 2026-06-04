@@ -9,6 +9,8 @@ import { EditableParagraph } from '@components/editor-blocks/EditableParagraph';
 import { EditableHeading } from '@components/editor-blocks/EditableHeading';
 import { EditableCode } from '@components/editor-blocks/EditableCode';
 import { EditableImage } from '@components/editor-blocks/EditableImage';
+import { EditableDivider } from '@components/editor-blocks/EditableDivider';
+import { EditableQuote } from '@components/editor-blocks/EditableQuote';
 import { editorStore } from '@stores/EditorStore';
 import { authStore } from '@stores/AuthStore';
 import { uiStore } from '@stores/UiStore';
@@ -51,16 +53,21 @@ export const EditorPage = observer(() => {
                 }
             }
 
-            if (parseResult.ok && parseResult.content) {
+            if (parseResult.ok && parseResult.content && parseResult.content.root) {
                 const blocks: any[] = [];
                 const rootIds: string[] = [];
 
                 const flattenBlocks = (blockList: any[]): string[] => {
+                    if (!blockList || !Array.isArray(blockList)) return [];
+
                     const ids: string[] = [];
                     for (const block of blockList) {
+                        if (!block || !block.id) continue;
+
                         blocks.push(block);
                         ids.push(block.id);
-                        if (block.children && block.children.length > 0) {
+
+                        if (block.children && Array.isArray(block.children) && block.children.length > 0) {
                             const childIds = flattenBlocks(block.children);
                             block.children = childIds;
                         }
@@ -70,8 +77,6 @@ export const EditorPage = observer(() => {
 
                 const rootIdsResult = flattenBlocks(parseResult.content.root);
                 editorStore.setDocument(id, metadata.title, metadata.description, blocks, rootIdsResult);
-            } else {
-                editorStore.setDocument(id, metadata.title, metadata.description, [], []);
             }
         } catch (err) {
             console.error('Load error:', err);
@@ -171,6 +176,11 @@ export const EditorPage = observer(() => {
                 return <EditableCode {...blockProps} />;
             case 'image':
                 return <EditableImage {...blockProps} />;
+            case 'divider':
+                return <EditableDivider {...blockProps} />;
+            case 'quote':
+                return <EditableQuote key={block.id} block={block} />;
+
             default:
                 return <div className={styles.blockPreview}>[{block.type}] Редактирование в разработке</div>;
         }

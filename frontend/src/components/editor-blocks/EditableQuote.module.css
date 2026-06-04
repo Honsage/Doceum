@@ -1,0 +1,75 @@
+.container {
+    position: relative;
+    margin: 1.5rem 0;
+}
+
+.quote {
+    position: relative;
+    margin: 0;
+    padding: 1.5rem 2rem 1.5rem 2.5rem;
+    background: var(--color-bg-secondary);
+    border-radius: 16px;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    border-left: 3px solid var(--color-accent);
+}
+
+.quote::before {
+    content: "“";
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    font-size: 2.5rem;
+    font-family: var(--font-sans);
+    color: var(--color-accent);
+    opacity: 0.35;
+    line-height: 1;
+}
+
+.quote::after {
+    content: "”";
+    position: absolute;
+    bottom: -0.25rem;
+    right: 0.75rem;
+    font-size: 2.5rem;
+    font-family: var(--font-sans);
+    color: var(--color-accent);
+    opacity: 0.35;
+    line-height: 1;
+}
+
+.emptyPlaceholder {
+    color: var(--color-text-secondary);
+    opacity: 0.6;
+    font-style: normal;
+    text-align: center;
+    padding: 1rem;
+}
+
+.addButton {
+    position: absolute;
+    bottom: -0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.2s;
+    opacity: 0;
+}
+
+.container:hover .addButton {
+    opacity: 1;
+}
+
+.addButton:hover {
+    transform: translateX(-50%) scale(1.05);
+}
