@@ -319,6 +319,60 @@ pre code {
     background: transparent !important;
     color: #2C2A27;
 }
+/* Кнопка "наверх" */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.scroll-top-btn:hover {
+    background: #3f6b5f;
+    transform: scale(1.05);
+}
+
+.scroll-top-btn.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-top-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: white;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@media (max-width: 640px) {
+    .scroll-top-btn {
+        bottom: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+    }
+    .scroll-top-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+}
     </style>
     <!-- Marked.js для рендеринга MD -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -1451,8 +1505,8 @@ interface SpoilerInline {
 2. [Terms and Definitions](#2-terms-and-definitions)
 3. [Conventions](#3-conventions)
 4. [File Structure](#4-file-structure)
-5. [Manifest Specification](#5-manifestjson-specification)
-6. [Content Specification](#6-contentjson-specification)
+5. [Manifest Specification](#5-manifest-specification)
+6. [Content Specification](#6-content-specification)
    - 6.1 [Document Root](#61-document-root)
    - 6.2 [Node Classification](#62-node-classification)
    - 6.3 [Semantic Containers](#63-semantic-containers)
@@ -2538,103 +2592,123 @@ The following example represents a partial guide on Python virtual environments.
     // --------------------------------------------------------------
     //  Логика переключения + определение языка браузера
     // --------------------------------------------------------------
-    let currentLang = 'en';   // default
+    let currentLang = 'en';
 
-    marked.setOptions({
-    highlight: function(code, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-            return hljs.highlight(code, { language: lang }).value;
-        }
-        return hljs.highlightAuto(code).value;
+    // Функция для генерации чистого ID из текста заголовка
+    function slugify(text) {
+        return text
+            .toLowerCase()
+            .replace(/[^\w\u0400-\u04FF\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
     }
-});
-    // Функция рендеринга через marked (без смайликов, чисто)
+
+    // Функция рендеринга
     function renderMarkdown() {
         const rawMd = currentLang === 'ru' ? ruSpec : enSpec;
-        if (rawMd) {
-            marked.setOptions({
-                breaks: true,
-                gfm: true,
-                headerIds: true,
-                mangle: false,
-                pedantic: false
-            });
-            const parsedHtml = marked.parse(rawMd);
-            document.getElementById('markdown-view').innerHTML = parsedHtml;
-
-            hljs.highlightAll();
-
-            // Добавляем плашку с языком и кнопку копирования для всех pre
-document.querySelectorAll('pre').forEach(block => {
-    // Находим язык из класса или из ближайшего code
-    const codeBlock = block.querySelector('code');
-    let lang = 'code';
-    if (codeBlock) {
-        const classes = codeBlock.className;
-        const match = classes.match(/language-(\w+)/);
-        if (match) lang = match[1];
-    }
-    
-    // Плашка с языком
-    const langSpan = document.createElement('span');
-    langSpan.className = 'code-lang';
-    langSpan.textContent = lang;
-    block.style.position = 'relative';
-    // block.appendChild(langSpan);
-    
-    // Кнопка копирования
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.textContent = 'Копировать';
-    btn.onclick = () => {
-        const code = block.querySelector('code')?.innerText || block.innerText;
-        navigator.clipboard.writeText(code);
-        btn.textContent = 'Скопировано!';
-        btn.classList.add('copied');
-        setTimeout(() => {
+        if (!rawMd) return;
+        
+        // Настраиваем marked ОДИН раз перед рендерингом
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false,
+            pedantic: false,
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            }
+        });
+        
+        // Рендерим HTML синхронно (старая версия marked)
+        let parsedHtml = marked.parse(rawMd);
+        
+        // Вручную добавляем ID к заголовкам
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = parsedHtml;
+        
+        // Проходим по всем заголовкам и добавляем им ID
+        tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(heading => {
+            const text = heading.textContent;
+            const slug = slugify(text);
+            heading.id = slug;
+        });
+        
+        // Вставляем в DOM
+        document.getElementById('markdown-view').innerHTML = tempDiv.innerHTML;
+        
+        // Подсветка кода
+        hljs.highlightAll();
+        
+        // Кнопки копирования для pre
+        document.querySelectorAll('pre').forEach(block => {
+            const codeBlock = block.querySelector('code');
+            let lang = 'code';
+            if (codeBlock) {
+                const classes = codeBlock.className;
+                const match = classes.match(/language-(\w+)/);
+                if (match) lang = match[1];
+            }
+            
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
             btn.textContent = 'Копировать';
-            btn.classList.remove('copied');
-        }, 2000);
-    };
-    block.appendChild(btn);
-});
-        }
-        // обновить заголовок и версионную строку
+            btn.onclick = () => {
+                const code = block.querySelector('code')?.innerText || block.innerText;
+                navigator.clipboard.writeText(code);
+                btn.textContent = 'Скопировано!';
+                setTimeout(() => {
+                    btn.textContent = 'Копировать';
+                }, 2000);
+            };
+            block.appendChild(btn);
+        });
+        
+        // Обновляем UI
         const titleEl = document.getElementById('main-title');
         if (titleEl) {
             titleEl.textContent = currentLang === 'ru' ? 'Спецификация формата Doceo' : 'Doceo Format Specification';
         }
-        // активная кнопка
+
+        // Меняем заголовок вкладки браузера
+document.title = currentLang === 'ru' 
+    ? 'Doceo – Спецификация формата' 
+    : 'Doceo – Format Specification';
+        
         document.querySelectorAll('.lang-btn').forEach(btn => {
             const lang = btn.getAttribute('data-lang');
             if (lang === currentLang) btn.classList.add('active');
             else btn.classList.remove('active');
         });
-
+        
         const footerNote = document.getElementById('footer-note');
-if (footerNote) {
-    footerNote.innerHTML = currentLang === 'ru' 
-        ? '&copy; Doceum, 2026. Все права защищены' 
-        : '&copy; Doceum, 2026. All rights reserved';
-}
+        if (footerNote) {
+            footerNote.innerHTML = currentLang === 'ru' 
+                ? '&copy; Doceum, 2026. Все права защищены' 
+                : '&copy; Doceum, 2026. All rights reserved';
+        }
     }
-
+    
     function setLanguage(lang) {
         if (lang === 'ru' || lang === 'en') {
             currentLang = lang;
             renderMarkdown();
         }
     }
-
-    // слушатели кнопок
+    
+    // Слушатели кнопок
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
             if (lang) setLanguage(lang);
         });
     });
-
-    // автоопределение языка из браузера (первоначальный выбор)
+    
+    // Автоопределение языка
     const browserLang = navigator.language || navigator.userLanguage;
     if (browserLang && browserLang.toLowerCase().startsWith('ru')) {
         currentLang = 'ru';
@@ -2642,6 +2716,33 @@ if (footerNote) {
         currentLang = 'en';
     }
     renderMarkdown();
+
+    // Кнопка "наверх"
+(function addScrollTopButton() {
+    // Создаём кнопку
+    const btn = document.createElement('button');
+    btn.className = 'scroll-top-btn';
+    btn.setAttribute('aria-label', 'Наверх');
+    btn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+    document.body.appendChild(btn);
+    
+    // Показываем/скрываем при прокрутке
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            btn.classList.add('show');
+        } else {
+            btn.classList.remove('show');
+        }
+    });
+    
+    // Плавный скролл наверх
+    btn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+})();
 </script>
 </body>
 </html>
