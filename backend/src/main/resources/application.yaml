@@ -30,7 +30,7 @@ spring:
           min-idle: 0
 
 jwt:
-  secret: ${JWT_SECRET:mySuperSecretKeyForJWTThatMustBeAtLeast32CharactersLong}
+  secret: ${JWT_SECRET}
   access-token-ttl-ms: 900000
 
 cors:
@@ -51,4 +51,4 @@ storage:
 
 doceum:
   signing:
-    secret: ${DOCEO_SIGNING_SECRET:defaultSecretKeyForDevOnlyPleaseChangeInProduction}
+    secret: ${DOCEO_SIGNING_SECRET}
