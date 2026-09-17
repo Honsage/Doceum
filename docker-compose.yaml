@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -40,7 +38,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://doceum.ru,https://www.doceum.ru}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
       STORAGE_ROOT: ${STORAGE_ROOT}
       DOCEO_SIGNING_SECRET: ${DOCEO_SIGNING_SECRET}
     ports:
@@ -64,7 +62,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /opt/certbot/conf:/etc/letsencrypt:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
     restart: unless-stopped
